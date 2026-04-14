@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f1a14" />
+    <title>Catalog review</title>
+    <link rel="stylesheet" href="css/cull.css" />
+  </head>
+  <body class="cull-page">
+    <header class="cull-top">
+      <div class="cull-top__inner">
+        <h1>Catalog review</h1>
+        <p>
+          Scroll through every animal. Use the arrow pad to bias square crops (wide or tall photos). Tick
+          <strong style="color: #e8a8a8">Remove from catalog</strong> for entries you want gone (stamps, wrong
+          species, bad photos). Selections are saved in this browser until you clear them. Then copy or download the
+          JSON.
+        </p>
+        <p><a href="index.html">← Back to game</a></p>
+      </div>
+    </header>
+
+    <main class="cull-list" id="cull-list" aria-busy="true"></main>
+
+    <div class="cull-bar" role="region" aria-label="Export">
+      <div class="cull-bar__inner">
+        <p class="cull-bar__stats" id="cull-stats"></p>
+        <p class="cull-msg" id="cull-msg" role="status"></p>
+        <div class="cull-bar__actions">
+          <button type="button" class="btn-secondary" id="cull-clear-checks">Clear all ticks</button>
+          <button type="button" class="btn-secondary" id="cull-clear-focus">Clear crop focus overrides</button>
+          <button type="button" class="btn-ghost" id="cull-copy">Copy JSON</button>
+          <button type="button" class="btn-primary" id="cull-download">Download JSON</button>
+        </div>
+        <p style="margin: 0; font-size: 0.78rem; color: #5c5854">
+          After replacing <code>scripts/animal-sources.json</code>, run
+          <code>npm run verify:animals</code> and <code>npm run build:animals</code>. Prefer
+          <strong>Download</strong> if copy fails for a huge list.
+        </p>
+      </div>
+    </div>
+
+    <script type="module" src="js/cull.js"></script>
+  </body>
+</html>

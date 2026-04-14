@@ -18,20 +18,44 @@ import {
   playPrintSound,
 } from './sounds.js';
 
-const PRINT_DURATION_MS = 7000;
 const PRINT_FALLBACK_MS = 7200;
 const PRINT_FALLBACK_REDUCED_MS = 80;
 const DONUT_R = 40;
 const DONUT_C = 2 * Math.PI * DONUT_R;
 
-/** Dev: Ctrl+Shift+Alt+R */
+const TRANS_EXPAND =
+  'left 0.52s cubic-bezier(0.22, 1, 0.36, 1), top 0.52s cubic-bezier(0.22, 1, 0.36, 1), width 0.52s cubic-bezier(0.22, 1, 0.36, 1), height 0.52s cubic-bezier(0.22, 1, 0.36, 1), transform 0.52s cubic-bezier(0.22, 1, 0.36, 1)';
+
+const RUSH_LERP = 0.32;
+const RUSH_DONE_DIST = 6;
+const RUSH_DONE_SIZE = 6;
+const RUSH_DONE_ROT = 2.5;
+const COLLAPSE_CLICK_MS = 540;
+
+const FOCUS_OBJECT_POSITION = {
+  left: 'left center',
+  right: 'right center',
+  up: 'center top',
+  down: 'center bottom',
+};
+
+/** @param {HTMLImageElement | null | undefined} img @param {string | undefined} direction */
+function applyImageFocus(img, direction) {
+  if (!img) return;
+  const pos = direction && FOCUS_OBJECT_POSITION[direction];
+  if (pos) img.style.objectPosition = pos;
+  else img.style.removeProperty('object-position');
+}
+/** Past this scroll delta from open, treat as “moved away” → same close as tapping the photo. */
+const SCROLL_AWAY_TO_COLLAPSE_PX = 80;
+
+/** Dev: Ctrl+Shift+Alt+R = full reset. Ctrl+Shift+Alt+T = skip countdown (keep photos). */
 
 const els = {
   creatureBg: document.getElementById('creature-bg'),
-  creatureDrift: document.getElementById('creature-drift'),
   creatureImg: document.getElementById('creature-img'),
   cameraHit: document.getElementById('camera-hit'),
-  swapBtn: document.getElementById('swap-btn'),
+  shutterFlash: document.getElementById('shutter-flash'),
   albumModal: document.getElementById('album-modal'),
   albumScroll: document.getElementById('album-scroll'),
   albumList: document.getElementById('album-list'),
@@ -43,7 +67,6 @@ const els = {
   printCaption: document.getElementById('print-caption'),
   expandLayer: document.getElementById('expand-layer'),
   expandBackdrop: document.getElementById('expand-backdrop'),
-  expandFly: document.getElementById('expand-fly'),
 };
 
 /**
@@ -54,8 +77,14 @@ let currentCreature = null;
 let cooldownTimer = null;
 let loadLock = false;
 
-/** @type {{ btn: HTMLButtonElement; clone: HTMLElement; source: HTMLElement } | null} */
+/** Next round’s image payload after decode(); consumed by beginRound. */
+let preloadedNextCreature = null;
+let preloadGeneration = 0;
+
+/** @type {{ polaroid: HTMLElement; placeholder: HTMLElement; btn: HTMLButtonElement; tilt: number; thumbSrc: string; ow: number; oh: number; rushRotDeg: number; collapseTimerId: ReturnType<typeof setTimeout> | null; rushRafId: number | null; expandScrollTop: number; photo: { direction?: string; imageUrl: string; thumbUrl?: string; animalName?: string } } | null} */
 let expandedState = null;
+
+let touchScrollLastY = null;
 
 function formatClock(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -100,6 +129,16 @@ function setLoadError(on) {
   document.body.classList.toggle('has-load-error', !!on);
 }
 
+function triggerShutterFlash() {
+  const el = els.shutterFlash;
+  el.classList.remove('is-on');
+  void el.offsetHeight;
+  el.classList.add('is-on');
+  setTimeout(() => {
+    el.classList.remove('is-on');
+  }, 85);
+}
+
 function updateAlbumCountdown() {
   const until = getCooldownUntil();
   const left = Math.max(0, until - Date.now());
@@ -136,11 +175,32 @@ function resetCameraUnfocusedUI() {
   setFocused(false);
   setCameraPrinting(false);
   setCameraLive(true);
-  els.swapBtn.classList.remove('hidden');
 }
 
-function pickAnimalPayload(excludeId) {
-  const row = pickRandomAnimal(excludeId);
+function getPhotographedCreatureIds() {
+  return getPhotos()
+    .map((p) => p.creatureId)
+    .filter((id) => id != null && id !== '');
+}
+
+function randomTiltDeg() {
+  return Math.round((Math.random() * 30 - 15) * 10) / 10;
+}
+
+/** Stable tilt for legacy saves without tiltDeg */
+function tiltFromPhoto(photo) {
+  if (typeof photo.tiltDeg === 'number' && Number.isFinite(photo.tiltDeg)) {
+    return Math.max(-15, Math.min(15, photo.tiltDeg));
+  }
+  let h = 0;
+  const id = photo.id || '';
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return ((Math.abs(h) % 310) / 10) - 15;
+}
+
+function pickAnimalPayload(excludeOverride) {
+  const exclude = excludeOverride ?? getPhotographedCreatureIds();
+  const row = pickRandomAnimal(exclude);
   if (!row) throw new Error('No animals in catalog.');
   return {
     creature: row,
@@ -149,60 +209,117 @@ function pickAnimalPayload(excludeId) {
   };
 }
 
+function invalidatePreloads() {
+  preloadGeneration += 1;
+  preloadedNextCreature = null;
+}
+
+async function decodeImageUrl(url) {
+  const img = new Image();
+  img.src = url;
+  if (img.decode) {
+    await img.decode();
+  } else {
+    await new Promise((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Preload failed'));
+    });
+  }
+}
+
+/** Warm every URL the album modal will show (existing rows + this capture’s thumb/full). */
+async function preloadAlbumModalImagesForCapture(creature) {
+  const urls = new Set();
+  for (const p of getPhotos()) {
+    const u = p.thumbUrl || p.imageUrl;
+    if (u) urls.add(u);
+  }
+  if (creature.thumbUrl) urls.add(creature.thumbUrl);
+  if (creature.fullUrl) urls.add(creature.fullUrl);
+  await Promise.all([...urls].map((url) => decodeImageUrl(url).catch(() => {})));
+}
+
+/** Warm the next full-size image in the background (decode in a separate Image). */
+async function preloadNextRound(excludeOverride) {
+  const gen = ++preloadGeneration;
+  try {
+    const data = pickAnimalPayload(excludeOverride);
+    await decodeImageUrl(data.fullUrl);
+    if (gen === preloadGeneration) {
+      preloadedNextCreature = data;
+    }
+  } catch {
+    if (gen === preloadGeneration) {
+      preloadedNextCreature = null;
+    }
+  }
+}
+
 async function beginRound() {
   loadLock = true;
   setLoadError(false);
   els.creatureImg.removeAttribute('src');
   els.creatureImg.alt = '';
+  applyImageFocus(els.creatureImg, undefined);
   currentCreature = null;
   resetCameraUnfocusedUI();
-  els.swapBtn.disabled = true;
   setPhaseCamera();
   try {
-    const data = pickAnimalPayload(null);
+    const photographed = new Set(getPhotographedCreatureIds());
+    let data = null;
+    if (preloadedNextCreature && !photographed.has(preloadedNextCreature.creature.id)) {
+      data = preloadedNextCreature;
+      preloadedNextCreature = null;
+    } else {
+      preloadedNextCreature = null;
+      data = pickAnimalPayload();
+    }
     currentCreature = data;
     els.creatureImg.src = data.fullUrl;
+    applyImageFocus(els.creatureImg, data.creature.direction);
     await els.creatureImg.decode().catch(() => {});
     await unlockAudio();
     await playBeepUnfocused();
+    void preloadNextRound();
   } catch {
     setLoadError(true);
     setCameraLive(false);
   } finally {
     loadLock = false;
-    els.swapBtn.disabled = false;
   }
 }
 
-async function swapCreature() {
-  if (gameState !== 'camera_unfocused' || !currentCreature || loadLock) return;
-  loadLock = true;
-  setLoadError(false);
-  els.swapBtn.disabled = true;
-  const excludeId = currentCreature.creature.id;
-  try {
-    const data = pickAnimalPayload(excludeId);
-    currentCreature = data;
-    els.creatureImg.src = data.fullUrl;
-    await els.creatureImg.decode().catch(() => {});
-    await unlockAudio();
-    await playBeepUnfocused();
-    resetCameraUnfocusedUI();
-  } catch {
-    setLoadError(true);
-  } finally {
-    loadLock = false;
-    els.swapBtn.disabled = false;
-  }
-}
-
-function runPrintEmergence(imageUrl, caption) {
+function runPrintEmergence(imageUrl, caption, direction) {
   const el = els.emergingPolaroid;
-  els.printImg.src = imageUrl;
-  els.printImg.alt = '';
+  const img = els.printImg;
+  const refocus = () => applyImageFocus(img, direction);
+
+  img.alt = '';
+  img.addEventListener(
+    'load',
+    () => {
+      refocus();
+      void img.decode().then(refocus).catch(() => refocus());
+    },
+    { once: true }
+  );
+  img.src = imageUrl;
+  if (img.complete && img.naturalWidth > 0) {
+    refocus();
+    void img.decode().then(refocus).catch(() => refocus());
+  } else {
+    refocus();
+  }
+
   els.printCaption.textContent = caption;
   els.printStage.classList.remove('hidden');
   els.printStage.setAttribute('aria-hidden', 'false');
+  /* Re-apply after the stage is visible so layout/object-position isn’t skipped (e.g. display:none). */
+  requestAnimationFrame(() => {
+    refocus();
+    requestAnimationFrame(refocus);
+  });
+
   el.classList.remove('is-emerged');
   void el.offsetHeight;
 
@@ -230,24 +347,33 @@ function runPrintEmergence(imageUrl, caption) {
 }
 
 function hidePrintStage() {
+  applyImageFocus(els.printImg, undefined);
   els.printStage.classList.add('hidden');
   els.printStage.setAttribute('aria-hidden', 'true');
   els.emergingPolaroid.classList.remove('is-emerged');
 }
 
-function buildPolaroidEl(photo, fullRes = false, layout = 'thumb') {
+function buildAlbumPolaroid(photo, { eager = false } = {}) {
   const wrap = document.createElement('div');
-  wrap.className = layout === 'expand' ? 'polaroid polaroid--expand' : 'polaroid polaroid--thumb';
+  wrap.className = 'polaroid polaroid--thumb';
+  const tilt = tiltFromPhoto(photo);
+  wrap.style.transform = `rotate(${tilt}deg)`;
+  wrap.style.transformOrigin = 'center center';
+
   const photoWrap = document.createElement('div');
   photoWrap.className = 'polaroid__photo';
   const img = document.createElement('img');
   img.className = 'polaroid__img';
-  img.src = fullRes ? photo.imageUrl : photo.thumbUrl || photo.imageUrl;
+  img.src = photo.thumbUrl || photo.imageUrl;
   img.alt = '';
+  img.loading = eager ? 'eager' : 'lazy';
+  applyImageFocus(img, photo.direction);
   photoWrap.appendChild(img);
+
   const cap = document.createElement('p');
   cap.className = 'polaroid__caption';
   cap.textContent = photo.animalName;
+
   wrap.appendChild(photoWrap);
   wrap.appendChild(cap);
   return wrap;
@@ -256,96 +382,288 @@ function buildPolaroidEl(photo, fullRes = false, layout = 'thumb') {
 function renderAlbumList() {
   const photos = getPhotos();
   els.albumList.replaceChildren();
-  for (const p of photos) {
+  photos.forEach((p, index) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'album-item';
-    btn.appendChild(buildPolaroidEl(p, false));
+    btn.appendChild(buildAlbumPolaroid(p, { eager: index === 0 }));
     btn.addEventListener('click', () => expandPhoto(btn, p));
     els.albumList.appendChild(btn);
+  });
+}
+
+function cancelRushRaf() {
+  if (expandedState?.rushRafId != null) {
+    cancelAnimationFrame(expandedState.rushRafId);
+    expandedState.rushRafId = null;
   }
+}
+
+function clearCollapseTimer() {
+  if (expandedState?.collapseTimerId != null) {
+    clearTimeout(expandedState.collapseTimerId);
+    expandedState.collapseTimerId = null;
+  }
+}
+
+/** If a click-close was in progress, stop it so scroll-rush can take over. */
+function interruptClickCollapseForRush() {
+  if (!expandedState?.collapseTimerId) return;
+  clearCollapseTimer();
+  els.expandLayer.classList.remove('expand-layer--backdrop-out');
+  expandedState.polaroid.style.transition = 'none';
+}
+
+function finishCollapse() {
+  if (!expandedState) return;
+  cancelRushRaf();
+  clearCollapseTimer();
+  const { polaroid, placeholder, btn, tilt, thumbSrc, photo } = expandedState;
+  polaroid.removeEventListener('click', onExpandedPolaroidClick);
+  const img = polaroid.querySelector('img');
+  if (img && thumbSrc) {
+    img.src = thumbSrc;
+    applyImageFocus(img, photo.direction);
+  }
+
+  els.expandLayer.classList.add('hidden');
+  els.expandLayer.setAttribute('aria-hidden', 'true');
+  els.expandLayer.classList.remove('expand-layer--backdrop-out');
+
+  polaroid.remove();
+  polaroid.removeAttribute('style');
+  polaroid.style.transform = `rotate(${tilt}deg)`;
+  polaroid.style.transformOrigin = 'center center';
+  btn.insertBefore(polaroid, placeholder);
+  placeholder.remove();
+
+  expandedState = null;
+}
+
+/** Instant teardown (e.g. dev reset) so we do not orphan nodes mid-transition. */
+function abortExpandInstant() {
+  if (!expandedState) return;
+  cancelRushRaf();
+  clearCollapseTimer();
+  const { polaroid, placeholder, btn, tilt, thumbSrc, photo } = expandedState;
+  polaroid.removeEventListener('click', onExpandedPolaroidClick);
+  polaroid.style.transition = 'none';
+  const img = polaroid.querySelector('img');
+  if (img && thumbSrc) {
+    img.src = thumbSrc;
+    applyImageFocus(img, photo.direction);
+  }
+  polaroid.removeAttribute('style');
+  polaroid.style.transform = `rotate(${tilt}deg)`;
+  polaroid.style.transformOrigin = 'center center';
+  btn.insertBefore(polaroid, placeholder);
+  placeholder.remove();
+  els.expandLayer.classList.remove('expand-layer--backdrop-out');
+  els.expandLayer.classList.add('hidden');
+  els.expandLayer.setAttribute('aria-hidden', 'true');
+  expandedState = null;
 }
 
 function expandPhoto(btn, photo) {
   if (expandedState || loadLock) return;
-  const source = btn.querySelector('.polaroid');
-  if (!source) return;
+  const polaroid = btn.querySelector('.polaroid');
+  if (!polaroid) return;
 
-  const first = source.getBoundingClientRect();
-  source.classList.add('is-source-hidden');
+  const tilt = tiltFromPhoto(photo);
+  const ow = polaroid.offsetWidth;
+  const oh = polaroid.offsetHeight;
+  const br = polaroid.getBoundingClientRect();
+  const placeholder = document.createElement('div');
+  placeholder.className = 'album-item__placeholder';
+  placeholder.style.width = `${br.width}px`;
+  placeholder.style.height = `${br.height}px`;
+  placeholder.setAttribute('aria-hidden', 'true');
 
-  const clone = buildPolaroidEl(photo, true, 'expand');
-  const lastW = Math.min(window.innerWidth * 0.9, 340);
-  const lastH = Math.min(window.innerHeight * 0.82, lastW * 1.28);
-  const lastLeft = (window.innerWidth - lastW) / 2;
-  const lastTop = (window.innerHeight - lastH) / 2;
+  btn.insertBefore(placeholder, polaroid);
+  polaroid.remove();
+  els.expandLayer.appendChild(polaroid);
 
-  clone.style.position = 'fixed';
-  clone.style.left = `${lastLeft}px`;
-  clone.style.top = `${lastTop}px`;
-  clone.style.width = `${lastW}px`;
-  clone.style.height = `${lastH}px`;
-  clone.style.margin = '0';
-  clone.style.zIndex = '3';
-  clone.style.transformOrigin = 'top left';
-  clone.style.boxSizing = 'border-box';
+  const img = polaroid.querySelector('img');
+  const thumbSrc = img?.src || '';
 
-  const dx = first.left - lastLeft;
-  const dy = first.top - lastTop;
-  const sx = first.width / lastW;
-  const sy = first.height / lastH;
-  clone.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+  const cx0 = br.left + br.width / 2;
+  const cy0 = br.top + br.height / 2;
 
-  els.expandFly.replaceChildren(clone);
-  els.expandLayer.classList.remove('hidden');
+  const pad = 16;
+  const maxW = window.innerWidth - pad * 2;
+  const maxH = window.innerHeight - pad * 2;
+  const ar = oh / ow;
+  let finalW = maxW;
+  let finalH = finalW * ar;
+  if (finalH > maxH) {
+    finalH = maxH;
+    finalW = finalH / ar;
+  }
+
+  const cx1 = window.innerWidth / 2;
+  const cy1 = window.innerHeight / 2;
+
+  polaroid.style.position = 'fixed';
+  polaroid.style.left = `${cx0}px`;
+  polaroid.style.top = `${cy0}px`;
+  polaroid.style.width = `${ow}px`;
+  polaroid.style.height = `${oh}px`;
+  polaroid.style.margin = '0';
+  polaroid.style.zIndex = '2';
+  polaroid.style.transform = `translate(-50%, -50%) rotate(${tilt}deg)`;
+  polaroid.style.transformOrigin = 'center center';
+  polaroid.style.transition = 'none';
+  polaroid.style.boxSizing = 'border-box';
+
+  if (img) {
+    img.src = photo.imageUrl;
+    applyImageFocus(img, photo.direction);
+  }
+
+  els.expandLayer.classList.remove('expand-layer--backdrop-out', 'hidden');
   els.expandLayer.setAttribute('aria-hidden', 'false');
-  expandedState = { btn, clone, source };
+  expandedState = {
+    polaroid,
+    placeholder,
+    btn,
+    tilt,
+    thumbSrc,
+    ow,
+    oh,
+    rushRotDeg: 0,
+    collapseTimerId: null,
+    rushRafId: null,
+    expandScrollTop: els.albumScroll.scrollTop,
+    photo,
+  };
 
-  clone.addEventListener('click', (e) => {
-    e.stopPropagation();
-    collapsePhoto();
-  });
+  polaroid.addEventListener('click', onExpandedPolaroidClick);
 
+  void polaroid.offsetHeight;
   requestAnimationFrame(() => {
-    clone.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
-    clone.style.transform = 'none';
+    polaroid.style.transition = TRANS_EXPAND;
+    polaroid.style.left = `${cx1}px`;
+    polaroid.style.top = `${cy1}px`;
+    polaroid.style.width = `${finalW}px`;
+    polaroid.style.height = `${finalH}px`;
+    polaroid.style.transform = 'translate(-50%, -50%) rotate(0deg)';
   });
 }
 
-function collapsePhoto() {
+function onExpandedPolaroidClick(e) {
+  e.stopPropagation();
+  collapseFromClick();
+}
+
+/** Backdrop fades while the card eases back (tap / backdrop / Escape). */
+function collapseFromClick() {
   if (!expandedState) return;
-  const { clone, source } = expandedState;
-  const firstRect = clone.getBoundingClientRect();
-  const lastRect = source.getBoundingClientRect();
-  const dx = lastRect.left - firstRect.left;
-  const dy = lastRect.top - firstRect.top;
-  const sx = lastRect.width / firstRect.width;
-  const sy = lastRect.height / firstRect.height;
+  cancelRushRaf();
+  clearCollapseTimer();
 
-  clone.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
-  clone.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+  const st = expandedState;
+  const sr = st.placeholder.getBoundingClientRect();
+  const cx = sr.left + sr.width / 2;
+  const cy = sr.top + sr.height / 2;
 
-  let cleaned = false;
-  const done = () => {
-    if (cleaned) return;
-    cleaned = true;
-    clone.removeEventListener('transitionend', onEnd);
-    source.classList.remove('is-source-hidden');
-    els.expandFly.replaceChildren();
-    els.expandLayer.classList.add('hidden');
-    els.expandLayer.setAttribute('aria-hidden', 'true');
-    expandedState = null;
-  };
+  els.expandLayer.classList.remove('expand-layer--backdrop-out');
+  void els.expandLayer.offsetHeight;
+  els.expandLayer.classList.add('expand-layer--backdrop-out');
 
-  const onEnd = (e) => {
-    if (e.propertyName === 'transform') done();
-  };
-  clone.addEventListener('transitionend', onEnd);
-  setTimeout(done, 520);
+  st.polaroid.style.transition = TRANS_EXPAND;
+  st.polaroid.style.left = `${cx}px`;
+  st.polaroid.style.top = `${cy}px`;
+  st.polaroid.style.width = `${st.ow}px`;
+  st.polaroid.style.height = `${st.oh}px`;
+  st.polaroid.style.transform = `translate(-50%, -50%) rotate(${st.tilt}deg)`;
+
+  st.collapseTimerId = setTimeout(() => finishCollapse(), COLLAPSE_CLICK_MS);
+}
+
+function rushStep() {
+  if (!expandedState) return;
+  const st = expandedState;
+  st.rushRafId = null;
+
+  const sr = st.placeholder.getBoundingClientRect();
+  const tcx = sr.left + sr.width / 2;
+  const tcy = sr.top + sr.height / 2;
+  const tw = st.ow;
+  const th = st.oh;
+  const { tilt, polaroid } = st;
+
+  const pr = polaroid.getBoundingClientRect();
+  let cx = pr.left + pr.width / 2;
+  let cy = pr.top + pr.height / 2;
+  let w = pr.width;
+  let h = pr.height;
+
+  const k = RUSH_LERP;
+  cx += (tcx - cx) * k;
+  cy += (tcy - cy) * k;
+  w += (tw - w) * k;
+  h += (th - h) * k;
+  st.rushRotDeg += (tilt - st.rushRotDeg) * k;
+
+  polaroid.style.transition = 'none';
+  polaroid.style.left = `${cx}px`;
+  polaroid.style.top = `${cy}px`;
+  polaroid.style.width = `${w}px`;
+  polaroid.style.height = `${h}px`;
+  polaroid.style.transform = `translate(-50%, -50%) rotate(${st.rushRotDeg}deg)`;
+
+  const dist = Math.hypot(tcx - cx, tcy - cy);
+  if (
+    dist < RUSH_DONE_DIST &&
+    Math.abs(w - tw) < RUSH_DONE_SIZE &&
+    Math.abs(h - th) < RUSH_DONE_SIZE &&
+    Math.abs(st.rushRotDeg - tilt) < RUSH_DONE_ROT
+  ) {
+    polaroid.style.left = `${tcx}px`;
+    polaroid.style.top = `${tcy}px`;
+    polaroid.style.width = `${tw}px`;
+    polaroid.style.height = `${th}px`;
+    polaroid.style.transform = `translate(-50%, -50%) rotate(${tilt}deg)`;
+    st.rushRotDeg = tilt;
+    finishCollapse();
+    return;
+  }
+
+  st.rushRafId = requestAnimationFrame(rushStep);
+}
+
+function kickRushHome() {
+  if (!expandedState) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    interruptClickCollapseForRush();
+    const st = expandedState;
+    if (!st) return;
+    const sr = st.placeholder.getBoundingClientRect();
+    const cx = sr.left + sr.width / 2;
+    const cy = sr.top + sr.height / 2;
+    st.polaroid.style.transition = 'none';
+    st.polaroid.style.left = `${cx}px`;
+    st.polaroid.style.top = `${cy}px`;
+    st.polaroid.style.width = `${st.ow}px`;
+    st.polaroid.style.height = `${st.oh}px`;
+    st.polaroid.style.transform = `translate(-50%, -50%) rotate(${st.tilt}deg)`;
+    finishCollapse();
+    return;
+  }
+  interruptClickCollapseForRush();
+  if (expandedState.rushRafId == null) {
+    expandedState.rushRafId = requestAnimationFrame(rushStep);
+  }
 }
 
 function onAlbumScroll() {
-  if (expandedState) collapsePhoto();
+  if (!expandedState) return;
+  const delta = Math.abs(els.albumScroll.scrollTop - expandedState.expandScrollTop);
+  if (delta >= SCROLL_AWAY_TO_COLLAPSE_PX) {
+    collapseFromClick();
+    return;
+  }
+  kickRushHome();
 }
 
 async function onCameraActivate() {
@@ -356,7 +674,6 @@ async function onCameraActivate() {
     await playFocusSound();
     gameState = 'camera_focused';
     setFocused(true);
-    els.swapBtn.classList.add('hidden');
     return;
   }
 
@@ -365,19 +682,35 @@ async function onCameraActivate() {
     setCameraPrinting(true);
     loadLock = true;
 
+    triggerShutterFlash();
     await playShutterSound();
     void playPrintSound();
 
     try {
-      await runPrintEmergence(currentCreature.fullUrl, currentCreature.creature.name);
+      const nextExclude = [...getPhotographedCreatureIds(), currentCreature.creature.id];
+      void preloadNextRound(nextExclude);
+      const albumPreload = preloadAlbumModalImagesForCapture(currentCreature);
+      await Promise.all([
+        runPrintEmergence(
+          currentCreature.fullUrl,
+          currentCreature.creature.name,
+          currentCreature.creature.direction
+        ),
+        albumPreload,
+      ]);
 
       const photo = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        creatureId: currentCreature.creature.id,
         animalName: currentCreature.creature.name,
         imageUrl: currentCreature.fullUrl,
         thumbUrl: currentCreature.thumbUrl,
+        tiltDeg: randomTiltDeg(),
         takenAt: new Date().toISOString(),
       };
+      if (currentCreature.creature.direction) {
+        photo.direction = currentCreature.creature.direction;
+      }
       addPhoto(photo);
       setLastBackgroundUrl(currentCreature.fullUrl);
       renderAlbumList();
@@ -392,12 +725,27 @@ async function onCameraActivate() {
   }
 }
 
+function devSkipCountdown() {
+  clearCooldown();
+  updateAlbumCountdown();
+  if (gameState !== 'waiting') return;
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer);
+    cooldownTimer = null;
+  }
+  abortExpandInstant();
+  setLastBackgroundUrl('');
+  setPhaseCamera();
+  void beginRound();
+}
+
 async function devResetGame() {
   if (cooldownTimer) {
     clearInterval(cooldownTimer);
     cooldownTimer = null;
   }
-  collapsePhoto();
+  abortExpandInstant();
+  invalidatePreloads();
   hidePrintStage();
   setLoadError(false);
   clearCooldown();
@@ -405,7 +753,6 @@ async function devResetGame() {
   setLastBackgroundUrl('');
   renderAlbumList();
   updateAlbumCountdown();
-  expandedState = null;
   loadLock = false;
   setCameraPrinting(false);
 
@@ -438,6 +785,7 @@ async function bootstrap() {
       gameState = 'waiting';
       updateAlbumCountdown();
       startCooldownTimer();
+      void preloadNextRound();
     } else {
       setPhaseCamera();
       beginRound();
@@ -457,33 +805,66 @@ async function bootstrap() {
     }
   });
 
-  els.swapBtn.addEventListener('click', () => {
-    swapCreature();
-  });
-
   els.expandBackdrop.addEventListener('click', () => {
-    collapsePhoto();
+    collapseFromClick();
   });
 
   els.albumScroll.addEventListener('scroll', onAlbumScroll, { passive: true });
 
-  window.addEventListener(
+  els.expandLayer.addEventListener(
     'wheel',
-    () => {
-      if (expandedState) collapsePhoto();
+    (e) => {
+      if (!expandedState) return;
+      e.preventDefault();
+      els.albumScroll.scrollTop += e.deltaY;
+    },
+    { passive: false }
+  );
+
+  els.expandLayer.addEventListener(
+    'touchstart',
+    (e) => {
+      if (!expandedState) return;
+      touchScrollLastY = e.touches[0].clientY;
     },
     { passive: true }
   );
 
+  els.expandLayer.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!expandedState || touchScrollLastY == null) return;
+      const y = e.touches[0].clientY;
+      const dy = touchScrollLastY - y;
+      touchScrollLastY = y;
+      e.preventDefault();
+      els.albumScroll.scrollTop += dy;
+    },
+    { passive: false }
+  );
+
+  els.expandLayer.addEventListener('touchend', () => {
+    touchScrollLastY = null;
+  });
+
+  els.expandLayer.addEventListener('touchcancel', () => {
+    touchScrollLastY = null;
+  });
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && expandedState) {
       e.preventDefault();
-      collapsePhoto();
+      collapseFromClick();
       return;
     }
     if (e.ctrlKey && e.shiftKey && e.altKey && e.code === 'KeyR') {
       e.preventDefault();
       void devResetGame();
+      return;
+    }
+    if (e.ctrlKey && e.shiftKey && e.altKey && e.code === 'KeyT') {
+      e.preventDefault();
+      devSkipCountdown();
     }
   });
 }

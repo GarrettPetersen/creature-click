@@ -16,6 +16,8 @@
       <div class="creature-bg__vignette" aria-hidden="true"></div>
     </div>
 
+    <div id="shutter-flash" class="shutter-flash" aria-hidden="true"></div>
+
     <div
       id="camera-hit"
       class="camera-hit"
@@ -23,15 +25,6 @@
       role="button"
       aria-label="Camera"
     ></div>
-
-    <button type="button" id="swap-btn" class="swap-fab hidden" aria-label="Another animal">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M23 4v6h-6" />
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-        <path d="M1 20v-6h6" />
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L1 14" />
-      </svg>
-    </button>
 
     <div id="album-modal" class="album-modal hidden" role="dialog" aria-modal="false" aria-hidden="true">
       <div id="album-scroll" class="album-modal__inner">
@@ -69,7 +62,6 @@
 
     <div id="expand-layer" class="expand-layer hidden" aria-hidden="true">
       <button type="button" class="expand-layer__backdrop" id="expand-backdrop" aria-label="Close"></button>
-      <div id="expand-fly" class="expand-fly"></div>
     </div>
 
     <script type="module" src="js/app.js"></script>

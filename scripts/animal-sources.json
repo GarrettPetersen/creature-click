@@ -1,48 +1,1020 @@
 [
-  { "name": "Red panda", "file": "Red Panda.JPG" },
-  { "name": "Lion", "file": "Lion waiting in Namibia.jpg" },
-  { "name": "Elephant", "file": "African elephant.jpg" },
-  { "name": "Tiger", "file": "Bengal tiger.jpg" },
-  { "name": "Owl", "file": "Eurasian eagle-owl (44088).jpg" },
-  { "name": "Penguin", "file": "Emperor Penguin Manchot empereur.jpg" },
-  { "name": "Giraffe", "file": "Giraffe standing.jpg" },
-  { "name": "Dolphin", "file": "Common dolphin.jpg" },
-  { "name": "Koala", "file": "Koala climbing tree.jpg" },
-  { "name": "Zebra", "file": "Plains Zebra Equus quagga.jpg" },
-  { "name": "Polar bear", "file": "Polar bear.jpg" },
-  { "name": "Hedgehog", "file": "Erinaceus europaeus LC0119.jpg" },
-  { "name": "Sea turtle", "file": "Green sea turtle.jpg" },
-  { "name": "Butterfly", "file": "Monarch In May.jpg" },
-  { "name": "Parrot", "file": "Scarlet macaw.jpg" },
-  { "name": "Sea otter", "file": "Sea otter cropped.jpg" },
-  { "name": "Tree frog", "file": "Agalychnis callidryas.jpg" },
-  { "name": "Flamingo", "file": "Greater flamingo.jpg" },
-  { "name": "Wolf", "file": "Gray wolf.jpg" },
-  { "name": "Rabbit", "file": "Eastern cottontail.jpg" },
-  { "name": "Giant panda", "file": "Grosser_Panda.JPG" },
-  { "name": "Cheetah", "file": "Cheetah Kruger.jpg" },
-  { "name": "Kangaroo", "file": "Forester kangaroo (Macropus giganteus tasmaniensis) portrait Esk Valley.jpg" },
-  { "name": "Ring-tailed lemur", "file": "Ring-tailed lemur.jpg" },
-  { "name": "Meerkat", "file": "Meerkat (Suricata suricatta).jpg" },
-  { "name": "Beaver", "file": "North American Beaver, Humber River near Kleinburg, Ontario (39637607974).jpg" },
-  { "name": "Bald eagle", "file": "Bald Eagle.jpg" },
-  { "name": "Peacock", "file": "Paonroue.JPG" },
-  { "name": "Hummingbird", "file": "Ruby-throated Hummingbird.jpg" },
-  { "name": "Deer", "file": "White-tailed deer (Odocoileus virginianus goudotii) male head Chingaza.jpg" },
-  { "name": "Squirrel", "file": "Eastern Grey Squirrel in St James's Park, London - Nov 2006 edit.jpg" },
-  { "name": "Rhinoceros", "file": "Rhinoceros in South Africa adjusted.jpg" },
-  { "name": "Hippopotamus", "file": "Hippopotamus - 04.jpg" },
-  { "name": "Harbor seal", "file": "Harbor seal (Phoca vitulina) at Magdalen fjord, Svalbard (1).jpg" },
-  { "name": "Octopus", "file": "Octopus vulgaris.jpg" },
-  { "name": "Swan", "file": "Mute swan Vrhnika.jpg" },
-  { "name": "Pelican", "file": "Brown Pelican.jpg" },
-  { "name": "Jellyfish", "file": "Pacific sea nettles.jpg" },
-  { "name": "Sloth", "file": "Bradypus.jpg" },
-  { "name": "Camel", "file": "Dromedary in Thar desert.jpg" },
-  { "name": "Cow", "file": "Cow BW.jpg" },
-  { "name": "Horse", "file": "Nokota Horses cropped.jpg" },
-  { "name": "Chicken", "file": "Hen with chicks, Raisen district, MP, India.jpg" },
-  { "name": "Duck", "file": "Mallard2.jpg" },
-  { "name": "Cat", "file": "Felis catus-cat on snow.jpg" },
-  { "name": "Dog", "file": "Golden Retriever dog at MAV-USP.jpg" }
+  {
+    "name": "Red panda",
+    "file": "Red Panda.JPG"
+  },
+  {
+    "name": "Lion",
+    "file": "Lion waiting in Namibia.jpg"
+  },
+  {
+    "name": "Elephant",
+    "file": "African elephant.jpg"
+  },
+  {
+    "name": "Tiger",
+    "file": "Bengal tiger.jpg"
+  },
+  {
+    "name": "Owl",
+    "file": "Eurasian eagle-owl (44088).jpg"
+  },
+  {
+    "name": "Penguin",
+    "file": "Emperor Penguin Manchot empereur.jpg"
+  },
+  {
+    "name": "Giraffe",
+    "file": "Giraffe standing.jpg"
+  },
+  {
+    "name": "Dolphin",
+    "file": "Common dolphin.jpg"
+  },
+  {
+    "name": "Koala",
+    "file": "Koala climbing tree.jpg"
+  },
+  {
+    "name": "Zebra",
+    "file": "Plains Zebra Equus quagga.jpg"
+  },
+  {
+    "name": "Polar bear",
+    "file": "Polar bear.jpg"
+  },
+  {
+    "name": "Hedgehog",
+    "file": "Erinaceus europaeus LC0119.jpg"
+  },
+  {
+    "name": "Sea turtle",
+    "file": "Green sea turtle.jpg"
+  },
+  {
+    "name": "Butterfly",
+    "file": "Monarch In May.jpg"
+  },
+  {
+    "name": "Parrot",
+    "file": "Scarlet macaw.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Sea otter",
+    "file": "Sea otter cropped.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Tree frog",
+    "file": "Agalychnis callidryas.jpg"
+  },
+  {
+    "name": "Flamingo",
+    "file": "Greater flamingo.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Wolf",
+    "file": "Gray wolf.jpg"
+  },
+  {
+    "name": "Rabbit",
+    "file": "Eastern cottontail.jpg"
+  },
+  {
+    "name": "Giant panda",
+    "file": "Grosser Panda.JPG"
+  },
+  {
+    "name": "Cheetah",
+    "file": "Cheetah Kruger.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Kangaroo",
+    "file": "Forester kangaroo (Macropus giganteus tasmaniensis) portrait Esk Valley.jpg"
+  },
+  {
+    "name": "Ring-tailed lemur",
+    "file": "Ring-tailed lemur.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Meerkat",
+    "file": "Meerkat (Suricata suricatta).jpg"
+  },
+  {
+    "name": "Beaver",
+    "file": "North American Beaver, Humber River near Kleinburg, Ontario (39637607974).jpg"
+  },
+  {
+    "name": "Bald eagle",
+    "file": "Bald Eagle.jpg"
+  },
+  {
+    "name": "Peacock",
+    "file": "Paonroue.JPG",
+    "direction": "right"
+  },
+  {
+    "name": "Hummingbird",
+    "file": "Ruby-throated Hummingbird.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Deer",
+    "file": "White-tailed deer (Odocoileus virginianus goudotii) male head Chingaza.jpg"
+  },
+  {
+    "name": "Squirrel",
+    "file": "Eastern Grey Squirrel in St James's Park, London - Nov 2006 edit.jpg"
+  },
+  {
+    "name": "Rhinoceros",
+    "file": "Rhinoceros in South Africa adjusted.jpg"
+  },
+  {
+    "name": "Hippopotamus",
+    "file": "Hippopotamus - 04.jpg"
+  },
+  {
+    "name": "Harbor seal",
+    "file": "Harbor seal (Phoca vitulina) at Magdalen fjord, Svalbard (1).jpg"
+  },
+  {
+    "name": "Octopus",
+    "file": "Octopus vulgaris.jpg"
+  },
+  {
+    "name": "Swan",
+    "file": "Mute swan Vrhnika.jpg"
+  },
+  {
+    "name": "Pelican",
+    "file": "Brown Pelican.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Jellyfish",
+    "file": "Pacific sea nettles.jpg"
+  },
+  {
+    "name": "Sloth",
+    "file": "Bradypus.jpg"
+  },
+  {
+    "name": "Camel",
+    "file": "Dromedary in Thar desert.jpg"
+  },
+  {
+    "name": "Cow",
+    "file": "Cow BW.jpg"
+  },
+  {
+    "name": "Horse",
+    "file": "Nokota Horses cropped.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Chicken",
+    "file": "Hen with chicks, Raisen district, MP, India.jpg"
+  },
+  {
+    "name": "Duck",
+    "file": "Mallard2.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Cat",
+    "file": "Felis catus-cat on snow.jpg"
+  },
+  {
+    "name": "Cottontail rabbit",
+    "file": "Eastern cottontail headshot (30826).jpg"
+  },
+  {
+    "name": "Kagu",
+    "file": "Kagu 0A2A3521.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Dung beetle",
+    "file": "Geotrupes stercorarius2.jpg"
+  },
+  {
+    "name": "axolotl",
+    "file": "Ambystoma mexicanum Natural History Museum University of Pisa (cropped).jpg",
+    "direction": "right"
+  },
+  {
+    "name": "banded mongoose",
+    "file": "171 Banded mongoose standing at sunset in Etosha National Park Photo by Giles Laurent.jpg"
+  },
+  {
+    "name": "Murray cod",
+    "file": "Murray cod02 melb aquarium.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "cheetah",
+    "file": "TheCheethcat.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Canary-shouldered thorn moth",
+    "file": "Ennomos erosaria FvL.jpg"
+  },
+  {
+    "name": "September thorn moth",
+    "file": "Ennomos autumnaria FvL m.jpg"
+  },
+  {
+    "name": "Wheat rust (fungus)",
+    "file": "Puccinia recondita f.sp. tritici on Triticum aestivum germinating uredospore, Bruine roest op gewone tarwe uredospore met kiembuis(1).jpg"
+  },
+  {
+    "name": "Strophius hairstreak butterfly",
+    "file": "Strophius Hairstreak (Allosmaitia strophius).jpg"
+  },
+  {
+    "name": "Greater Short-toed Lark",
+    "file": "Alondra.jpg"
+  },
+  {
+    "name": "Greater Short-toed Lark",
+    "file": "GREATER SHORT-TOED LARK Calandrella brachydactyla (8468650916).jpg"
+  },
+  {
+    "name": "Common Blackbird",
+    "file": "Amselmännchen der Unterart T. m. azorensis auf Terceira.jpg"
+  },
+  {
+    "name": "Eurasian Hoopoe",
+    "file": "Common Hoopoe Photograph By Shantanu Kuveskar.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Eurasian Hoopoe",
+    "file": "Upupa epops Madrid 02.jpg"
+  },
+  {
+    "name": "Grey Heron",
+    "file": "Baden-Baden 10-2015 img14 Hector Berlioz Park Grey heron.jpg"
+  },
+  {
+    "name": "Eurasian Magpie",
+    "file": "Magpie in Ladakh.JPG",
+    "direction": "right"
+  },
+  {
+    "name": "Least weasel",
+    "file": "Mustela nivalis -British Wildlife Centre-4.jpg"
+  },
+  {
+    "name": "Western Barn Owl",
+    "file": "Tyto alba tylluan wen detail.jpg"
+  },
+  {
+    "name": "Osprey",
+    "file": "Balbuzard pecheur Lac de Tunis.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "European Robin",
+    "file": "Erithacus rubecula with cocked head.jpg"
+  },
+  {
+    "name": "European Robin",
+    "file": "European robin (Erithacus rubecula) juvenile.jpg"
+  },
+  {
+    "name": "Stoat",
+    "file": "Røyskatt (Mustela erminea erminea), Lista, Norway.jpg"
+  },
+  {
+    "name": "mallard",
+    "file": "Anas platyrhynchos (mixed pair) (32428014687).jpg"
+  },
+  {
+    "name": "White Stork",
+    "file": "Ciconia ciconia - 01.jpg"
+  },
+  {
+    "name": "Eurasian Jay",
+    "file": "Garrulus glandarius 1 Luc Viatour.jpg"
+  },
+  {
+    "name": "Northern Raven",
+    "file": "Common Raven (Corvus corax) (11793963694).jpg"
+  },
+  {
+    "name": "Common Coot",
+    "file": "Fulica atra - Common coot, Adana 2016-11-12 01-1.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Little Auk",
+    "file": "AlleAlle 2.jpg"
+  },
+  {
+    "name": "Common Kestrel",
+    "file": "Common kestrel falco tinnunculus.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Common Iora",
+    "file": "Bharat ravat.jpg"
+  },
+  {
+    "name": "Red Crossbill",
+    "file": "Red crossbill (53582346437).jpg"
+  },
+  {
+    "name": "European mink",
+    "file": "Europäischer Nerz.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Montagu's Harrier",
+    "file": "Circus pygargus (33541975444).jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Bluethroat",
+    "file": "Blåhake - bluethroat (Luscinia svecica)-5 - Flickr - Ragnhild & Neil Crawford.jpg"
+  },
+  {
+    "name": "European polecat",
+    "file": "Ilder.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Long-tailed Duck",
+    "file": "Long-tailed-duck.jpg"
+  },
+  {
+    "name": "Tundra swan",
+    "file": "Tundra Swan (Cygnus columbianus) (8571142484).jpg"
+  },
+  {
+    "name": "Spotted Flycatcher",
+    "file": "SpottedFlycatcheronfence.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Black-legged Kittiwake",
+    "file": "Rissa tridactyla (Vardø, 2012).jpg"
+  },
+  {
+    "name": "Common Redstart",
+    "file": "Gartenrotschwanz 1.jpg"
+  },
+  {
+    "name": "Great Black-backed Gull",
+    "file": "Great Black-backed Gull Larus marinus.jpg"
+  },
+  {
+    "name": "Greater Scaup",
+    "file": "2014-04-14 Aythya marila, female, Killingworth Lake, Northumberland 04.jpg"
+  },
+  {
+    "name": "Ring Ouzel",
+    "file": "2015-04-20 Turdus torquatus torquatus Cairngorm 2.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Dunlin",
+    "file": "Calidris alpina alpina, Riga, Latvia 1.jpg"
+  },
+  {
+    "name": "Varied Thrush",
+    "file": "Varied thrush (73976).jpg"
+  },
+  {
+    "name": "Goldcrest",
+    "file": "Regulus regulus -Marwell Wildlife, Hampshire, England-8.jpg"
+  },
+  {
+    "name": "Red-backed Shrike",
+    "file": "Lanius collurio - Red-backed shrike 09.jpg"
+  },
+  {
+    "name": "Northern Gannet",
+    "file": "Northern Gannet with nest material.jpg"
+  },
+  {
+    "name": "Barnacle goose",
+    "file": "Barnacle goose (Branta leucopsis).jpg"
+  },
+  {
+    "name": "Atlantic Puffin",
+    "file": "Puffin (Fratercula arctica).jpg"
+  },
+  {
+    "name": "Red-throated Diver",
+    "file": "Gavia stellata -Iceland -swimming-8.jpg"
+  },
+  {
+    "name": "Common Eider",
+    "file": "Somateria mollissima male..jpg"
+  },
+  {
+    "name": "Dunnock",
+    "file": "Dunnock crop2.jpg"
+  },
+  {
+    "name": "Whooper Swan",
+    "file": "Cygnus cygnus 070416 IOL.jpg"
+  },
+  {
+    "name": "Australian Pied Cormorant",
+    "file": "Pied Shag 02.jpg"
+  },
+  {
+    "name": "Black-headed Gull",
+    "file": "Black-headed Gull - St James's Park, London - Nov 2006.jpg"
+  },
+  {
+    "name": "Black-faced Cormorant",
+    "file": "Phalacrocorax fuscescens - Derwent River Estuary.jpg"
+  },
+  {
+    "name": "Garganey",
+    "file": "Anas querquedula, Llobregat Delta, Barcelona 5.jpg"
+  },
+  {
+    "name": "Feathered gothic moth",
+    "file": "Tholera.decimalis.jpg"
+  },
+  {
+    "name": "Eurasian Wryneck",
+    "file": "Jynx torquilla (34536504885).jpg"
+  },
+  {
+    "name": "Twin-spotted moth",
+    "file": "Geometridae - Isturgia limbaria (female).JPG"
+  },
+  {
+    "name": "Owl moth",
+    "file": "Callopistria juventina.jpg"
+  },
+  {
+    "name": "Common snipe",
+    "file": "Bekassine (Blick nach oben).jpg"
+  },
+  {
+    "name": "Eurasian Teal",
+    "file": "Eurasian Teal Anas crecca, RSPB Titchwell, Norfolk (33675784246).jpg"
+  },
+  {
+    "name": "Eurasian Bittern",
+    "file": "Eurasian Bittern - Torrile - Italy 4528 (15409347121).jpg"
+  },
+  {
+    "name": "Wren",
+    "file": "Troglodytes troglodytes fumigatus.JPG"
+  },
+  {
+    "name": "tawny owl",
+    "file": "Kautz.jpg"
+  },
+  {
+    "name": "Common Shelduck",
+    "file": "2014-04-18 Tadorna tadorna pair, Swallow Pond.jpg"
+  },
+  {
+    "name": "Short-eared Owl",
+    "file": "Asio flammeus -Fazenda Campo de Ouro, Piraju, Sao Paulo, Brasil-8.jpg"
+  },
+  {
+    "name": "Fieldfare",
+    "file": "Björktrast (Turdus pilaris)-4.jpg"
+  },
+  {
+    "name": "Latticed Heath",
+    "file": "Chiasma clathrata02.jpg"
+  },
+  {
+    "name": "Jack Snipe",
+    "file": "Lymnocryptes minimus.jpg"
+  },
+  {
+    "name": "European Nightjar",
+    "file": "Caprimulgus europaeus g.JPG"
+  },
+  {
+    "name": "Canada Goose",
+    "file": "Canada Geese - Flickr - treegrow.jpg"
+  },
+  {
+    "name": "Common Pochard",
+    "file": "Aythya ferina Gentofte 1.jpg"
+  },
+  {
+    "name": "Black Redstart",
+    "file": "Black Redstart in Kaziranga National Park March 2025 by Tisha Mukherjee 02.jpg"
+  },
+  {
+    "name": "Arctic Tern",
+    "file": "00 3786. Küstenseeschwalbe.jpg"
+  },
+  {
+    "name": "Common Ringed Plover",
+    "file": "Charadrius hiaticula 3 breeding.jpg"
+  },
+  {
+    "name": "European hare",
+    "file": "European Brown Hare (50341079472).jpg"
+  },
+  {
+    "name": "Common Swift",
+    "file": "Common Swift 2025 07 18 02 (cropped).jpg"
+  },
+  {
+    "name": "Eurasian Sparrowhawk",
+    "file": "Sperber (Accipiter nisus) male -20200308 (2).JPG"
+  },
+  {
+    "name": "Eurasian Bullfinch",
+    "file": "Bullfinch male.jpg"
+  },
+  {
+    "name": "Eurasian Chaffinch",
+    "file": "Fringilla coelebs chaffinch male edit2.jpg"
+  },
+  {
+    "name": "Long-eared Owl",
+    "file": "Asio otus Downsview Park Toronto2.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Common Buzzard",
+    "file": "Common Buzzard by caroline legg (cropped).jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Rook",
+    "file": "Corvus frugilegus -Dartmoor, Devon, England-8.jpg"
+  },
+  {
+    "name": "Eurasian Golden Oriole",
+    "file": "Oriolus oriolus Ayodar 2.jpg"
+  },
+  {
+    "name": "Northern Lapwing",
+    "file": "Northern-Lapwing-Vanellus-vanellus.jpg"
+  },
+  {
+    "name": "Common Nightingale",
+    "file": "Luscinia megarhynchos - Common nightingale - Nachtegaal.jpg"
+  },
+  {
+    "name": "Eurasian Jackdaw",
+    "file": "Corvus monedula-0002.jpg"
+  },
+  {
+    "name": "Black Stork",
+    "file": "Ciconia nigra -Kruger National Park-8.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "White wagtail",
+    "file": "White wagtail female first summer.jpg"
+  },
+  {
+    "name": "Mute Swan",
+    "file": "Mute Swan Emsworth2.JPG"
+  },
+  {
+    "name": "Blue tit",
+    "file": "ParusCaeruleus.jpg"
+  },
+  {
+    "name": "Hooded Crow",
+    "file": "Corvus cornix (33515567265).jpg"
+  },
+  {
+    "name": "European Goldfinch",
+    "file": "Carcar.jpg"
+  },
+  {
+    "name": "Little Grebe",
+    "file": "Little Grebe - Tachybaptus ruficollis 15-1.jpg"
+  },
+  {
+    "name": "Great Crested Grebe",
+    "file": "Great Crested Grebe (52909695022).jpg"
+  },
+  {
+    "name": "Barn Swallow",
+    "file": "Barn Swallow (95504589).jpeg"
+  },
+  {
+    "name": "Common Pheasant",
+    "file": "Fagiano 1.jpg"
+  },
+  {
+    "name": "White-tailed Eagle",
+    "file": "Adult White-tailed Eagle defending prey, Rezerwat Gostynin-Wloclawek, Poland.jpg"
+  },
+  {
+    "name": "Great Cormorant",
+    "file": "2021-05-05 Phalacrocorax carbo carbo, Killingworth Lake, Northumberland 1-2.jpg"
+  },
+  {
+    "name": "Northern Pintail",
+    "file": "Northern Pintail (Female)- Feeding I IMG 0910.jpg"
+  },
+  {
+    "name": "Common Starling",
+    "file": "Common Starling, Blyth (12598795653).jpg"
+  },
+  {
+    "name": "Great Tit",
+    "file": "Kohlmeise27ib.jpg"
+  },
+  {
+    "name": "Hen Harrier",
+    "file": "Circus cyaneus 265961899.jpg"
+  },
+  {
+    "name": "Plain wave moth",
+    "file": "Semiothisa notata01.jpg"
+  },
+  {
+    "name": "Greek moth",
+    "file": "Lobophora halterata Bytom.jpg"
+  },
+  {
+    "name": "V moth",
+    "file": "Macaria wauaria.jpg"
+  },
+  {
+    "name": "Early tooth-striped moth",
+    "file": "Early tooth-striped moth.jpg"
+  },
+  {
+    "name": "Birch mocha moth",
+    "file": "Gerimpelde spanner.jpg"
+  },
+  {
+    "name": "European Rabbit",
+    "file": "Oryctolagus cuniculus Tasmania 2 (cropped).jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Eurasian Hobby",
+    "file": "Eurasian Hobby (Falco subbuteo) (28913995607).jpg"
+  },
+  {
+    "name": "Greylag Goose",
+    "file": "00 3688 Graugans (Anser anser).jpg"
+  },
+  {
+    "name": "Gadwall",
+    "file": "Anas-strepera-001.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Sand Martin",
+    "file": "Riparia riparia -Markinch, Fife, Scotland -flying-8-4c.jpg"
+  },
+  {
+    "name": "Eurasian Oystercatcher",
+    "file": "Haematopus ostralegus He.jpg"
+  },
+  {
+    "name": "Northern shoveler",
+    "file": "Northern-Shoveler Anas-clypeata.jpg"
+  },
+  {
+    "name": "Orca",
+    "file": "Killerwhales jumping.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Eurasian Skylark",
+    "file": "Alouette des champs Zaghouan001.jpg"
+  },
+  {
+    "name": "Eurasian Tree Sparrow",
+    "file": "Tree-Sparrow-2009-16-02.jpg"
+  },
+  {
+    "name": "Yellow wagtail",
+    "file": "Wiesenschafstelze.JPG"
+  },
+  {
+    "name": "Corn Crake",
+    "file": "Corncrake2.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Common Wood Pigeon",
+    "file": "Columba palumbus ssp. palumbus.jpg"
+  },
+  {
+    "name": "Common linnet",
+    "file": "Carduelis cannabina (male).JPG"
+  },
+  {
+    "name": "European Pine Marten",
+    "file": "Pine Marten (48173751702).jpg"
+  },
+  {
+    "name": "Common House Martin",
+    "file": "Delichon urbicum 10.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Australian Pelican",
+    "file": "Australian Pelicans.jpg"
+  },
+  {
+    "name": "Brown-headed Gull",
+    "file": "Brown-headed Gull. in breeding plumage.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Little tern",
+    "file": "Sterna albifrons.jpg"
+  },
+  {
+    "name": "Grey Partridge",
+    "file": "Perdix perdix (Marek Szczepanek).jpg"
+  },
+  {
+    "name": "Eurasian Woodcock",
+    "file": "Waldschnepfe (scolopax rusticola) - Spiekeroog, Nationalpark Niedersächsisches Wattenmeer.jpg"
+  },
+  {
+    "name": "Little Bittern",
+    "file": "Ixobrychus minutus 3 (Marek Szczepanek).jpg"
+  },
+  {
+    "name": "Bohemian Waxwing",
+    "file": "Bohemian waxwing (Bombycilla garrulus), Uitkerke, Belgium (16366736689).jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Stock Dove",
+    "file": "2025-03-24 Columba oenas, Jesmond Dene 6.jpg"
+  },
+  {
+    "name": "Pied avocet",
+    "file": "Avocette élégante Thyna019.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Wild Turkey",
+    "file": "Wild Turkey, Creekside Park, 8 May 2014 (14145843695).jpg"
+  },
+  {
+    "name": "Moon jellyfish",
+    "file": "Moon Jellyfish (14278816210).jpg"
+  },
+  {
+    "name": "Ruddy Turnstone",
+    "file": "Ruddy Turnstone (1).jpg"
+  },
+  {
+    "name": "Northern Fulmar",
+    "file": "Fulmar (Fulmarus glacialis) on water.jpg"
+  },
+  {
+    "name": "African Openbill",
+    "file": "African Openbill.jpg"
+  },
+  {
+    "name": "Giant African snail",
+    "file": "Snail in Ubud, Bali, 2010 (1).jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Harbor seal",
+    "file": "Harbor seal in Holyoke, MA. Connecticut River. 01.jpg"
+  },
+  {
+    "name": "Meadow pipit",
+    "file": "Meadow-Pipit.jpg"
+  },
+  {
+    "name": "Reed Bunting",
+    "file": "2014-06-01 Emberiza schoeniclus, Swallow Pond, Northumberland 1.jpg"
+  },
+  {
+    "name": "Woodlark",
+    "file": "Lullula arborea (Rodrigo de Almeida).jpg"
+  },
+  {
+    "name": "Common whitethroat",
+    "file": "Flickr - Rainbirder - Common Whitethroat (Sylvia communis).jpg"
+  },
+  {
+    "name": "Crested Lark",
+    "file": "Galerida cristata - Crested lark 01.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Duck-billed catfish",
+    "file": "Silure spatule.jpg"
+  },
+  {
+    "name": "Water vole",
+    "file": "Water.vole.arp.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Harbor porpoise",
+    "file": "Daan Close Up.PNG"
+  },
+  {
+    "name": "Blue-capped Rock Thrush",
+    "file": "Blue-capped Rock Thrush, Seminary Hills, Nagpur April 2018 1.jpg"
+  },
+  {
+    "name": "Gray wolf",
+    "file": "Eurasian wolf 2.jpg"
+  },
+  {
+    "name": "Shoebill",
+    "file": "Entebbe Shoe Bill Stork.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Asian palm civet",
+    "file": "Paradox hermaph 060924 ltn.jpg"
+  },
+  {
+    "name": "African skimmer",
+    "file": "Skimmer (6217181987), crop.jpg"
+  },
+  {
+    "name": "Tonkin snub-nosed monkey",
+    "file": "Tonkin snub-nosed monkeys (Rhinopithecus avunculus).jpg"
+  },
+  {
+    "name": "ruddy cuckoo-dove",
+    "file": "Macropygia emiliana (Ruddy Cuckoo Dove)8.jpg"
+  },
+  {
+    "name": "Gull-billed Tern",
+    "file": "Gull-billed Tern (Gelochelidon nilotica) (34149541540).jpg"
+  },
+  {
+    "name": "Grey Plover",
+    "file": "Pluvialis squatarola (summer plumage).jpg"
+  },
+  {
+    "name": "Common Buttonquail",
+    "file": "Kurrichane Buttonquail 2016 01 01 2734.jpg"
+  },
+  {
+    "name": "Wood Sandpiper",
+    "file": "Liro uimarannalla.jpg"
+  },
+  {
+    "name": "red-billed malkoha",
+    "file": "Red-billed Malkoha.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Lesser Crested Tern",
+    "file": "Lesser crested terns (Thalasseus bengalensis) by Shantanu Kuveskar.jpg"
+  },
+  {
+    "name": "Common Greenshank",
+    "file": "Tringa nebularia - Laem Phak Bia.jpg"
+  },
+  {
+    "name": "Black-tailed Godwit",
+    "file": "Black-tailed Godwit (Limosa limosa).jpg"
+  },
+  {
+    "name": "Pied Stilt",
+    "file": "Himantopus leucocephalus - Hexham.jpg"
+  },
+  {
+    "name": "Common Cuckoo",
+    "file": "Cuculus canorus2.jpg"
+  },
+  {
+    "name": "Common Moorhen",
+    "file": "Common Moorhen (Gallinula chloropus pyrrhorrhoa), Mauritius.jpg"
+  },
+  {
+    "name": "Common Sandpiper",
+    "file": "Common sandpiper lake geneva-4.jpg"
+  },
+  {
+    "name": "Little Ringed Plover",
+    "file": "Charadrius dubius - Little ringed plover 05.jpg"
+  },
+  {
+    "name": "Eurasian Curlew",
+    "file": "Eurasian Curlew.jpg"
+  },
+  {
+    "name": "Kentish Plover",
+    "file": "Charadrius alexandrinus - Kentish Plover 03.jpg"
+  },
+  {
+    "name": "Terek Sandpiper",
+    "file": "Xenus cinereus (Alnus).jpg"
+  },
+  {
+    "name": "Greater Sand Plover",
+    "file": "Greater Sand Plover.jpg"
+  },
+  {
+    "name": "Eurasian Whimbrel",
+    "file": "Whimbrel Numenius phaeopus.jpg"
+  },
+  {
+    "name": "Common Redshank",
+    "file": "Tringa totanus - Common Redshank, Mersin 2016-12-11 07-2.jpg"
+  },
+  {
+    "name": "Red-necked Stint",
+    "file": "Calidris ruficollis - Marion Bay.jpg"
+  },
+  {
+    "name": "Pheasant-tailed Jacana",
+    "file": "Pheasant tailed Jacana (Non-breeding) I IMG 8638.jpg"
+  },
+  {
+    "name": "Bar-tailed Godwit",
+    "file": "Bar-tailed Godwit.jpg"
+  },
+  {
+    "name": "Pacific Golden Plover",
+    "file": "Pluvialis fulva -Bering Land Bridge National Preserve, Alaska, USA-8.jpg"
+  },
+  {
+    "name": "Greater Crested Tern",
+    "file": "Thalasseus bergii, Gansbaai, Western Cape, South Africa 1.jpg"
+  },
+  {
+    "name": "Yellow-footed tortoise",
+    "file": "Yellow-footed tortoise.jpg"
+  },
+  {
+    "name": "Brant Goose",
+    "file": "Branta bernicla hrota St Marys Northumberland 0.jpg",
+    "direction": "right"
+  },
+  {
+    "name": "Eurasian Badger",
+    "file": "Badger 25-07-09 closer.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Firewood catfish",
+    "file": "Firewood catfish.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Razorbill",
+    "file": "Razorbill with a nice catch.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Red Knot",
+    "file": "Calidris canutus no.JPG"
+  },
+  {
+    "name": "Caspian Tern",
+    "file": "Sterna-caspia-010.jpg",
+    "direction": "left"
+  },
+  {
+    "name": "Lesser black-backed gull",
+    "file": "Larus fuscus Finnboda 2012.jpg"
+  },
+  {
+    "name": "Common Tern",
+    "file": "Common tern 2025 07 08 08.jpg"
+  },
+  {
+    "name": "Great Knot",
+    "file": "Calidris tenuirostris, Nadezhdinsky, Primorsky Krai, Russia 1 (crop).jpg"
+  },
+  {
+    "name": "Silver-eared Mesia",
+    "file": "Leiothrix argentauris - Mae Wong.jpg"
+  },
+  {
+    "name": "Thick-billed Cuckoo",
+    "file": "Pachycoccyx audeberti, Tanzanië.jpg"
+  },
+  {
+    "name": "Mangrove Cuckoo",
+    "file": "Mangrove Cuckoo.jpg"
+  },
+  {
+    "name": "Great Lizard Cuckoo",
+    "file": "Coccyzus merlini -Pinar del Rio Province, Cuba-8 (1).jpg",
+    "direction": "up"
+  }
 ]

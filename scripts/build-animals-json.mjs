@@ -55,10 +55,12 @@ async function queryBatch(fullTitles, iiurlwidth) {
   return res.json();
 }
 
+const FOCUS_DIRECTIONS = new Set(['left', 'right', 'up', 'down']);
+
 /** @param {import('node:fs').PathLike} file */
 async function mapSourcesToPages(file) {
   const raw = await readFile(file, 'utf8');
-  /** @type {{ name: string, file: string }[]} */
+  /** @type {{ name: string, file: string, direction?: string }[]} */
   const list = JSON.parse(raw);
   if (!Array.isArray(list)) throw new Error('animal-sources.json must be a JSON array');
 
@@ -113,7 +115,7 @@ async function mapSourcesToPages(file) {
       errors.push(`No imageinfo for "${src.name}" (${src.file})`);
       continue;
     }
-    animals.push({
+    const entry = {
       id: String(row.pageid),
       name: src.name,
       commonsTitle: row.title,
@@ -124,7 +126,11 @@ async function mapSourcesToPages(file) {
       width: row.width,
       height: row.height,
       mime: row.mime,
-    });
+    };
+    if (src.direction && FOCUS_DIRECTIONS.has(src.direction)) {
+      entry.direction = src.direction;
+    }
+    animals.push(entry);
   }
 
   return { animals, errors };

@@ -4,7 +4,8 @@
   "scripts": {
     "build": "node scripts/build-public.mjs",
     "build:animals": "node scripts/build-animals-json.mjs",
-    "verify:animals": "node scripts/verify-animal-sources.mjs"
+    "verify:animals": "node scripts/verify-animal-sources.mjs",
+    "harvest:animals": "node scripts/harvest-animals-wikidata.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.22.0"
