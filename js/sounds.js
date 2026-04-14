@@ -1,4 +1,51 @@
-/** Simple camera-style cues via Web Audio (no external files). */
+/** Camera sounds: prefer files in /sounds/, fall back to Web Audio where noted. */
+
+const SOUNDS = {
+  beep: 'sounds/beep.mp3',
+  focus: 'sounds/focus.ogg',
+  shutter: 'sounds/shutter.ogg',
+  print: 'sounds/instant_camera_print.mp3',
+};
+
+/** @type {Record<string, HTMLAudioElement | null>} */
+const cache = {};
+
+function soundUrl(path) {
+  return new URL(`../${path}`, import.meta.url).href;
+}
+
+/**
+ * @param {keyof typeof SOUNDS} key
+ * @returns {HTMLAudioElement | null}
+ */
+function getClip(key) {
+  if (cache[key] !== undefined) return cache[key];
+  const path = SOUNDS[key];
+  if (!path) {
+    cache[key] = null;
+    return null;
+  }
+  const audio = new Audio(soundUrl(path));
+  audio.preload = 'auto';
+  cache[key] = audio;
+  return audio;
+}
+
+/**
+ * @param {keyof typeof SOUNDS} key
+ */
+async function playFile(key, volume = 1) {
+  const base = getClip(key);
+  if (!base) return false;
+  const a = base.cloneNode(true);
+  a.volume = Math.min(1, Math.max(0, volume));
+  try {
+    await a.play();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 let ctx = null;
 
@@ -15,10 +62,42 @@ export async function unlockAudio() {
   const c = getCtx();
   if (!c) return;
   if (c.state === 'suspended') await c.resume();
+  getClip('beep');
+  getClip('focus');
+  getClip('shutter');
+  getClip('print');
 }
 
-/** Autofocus / lens motor-ish: short rising tones */
-export function playFocusSound() {
+/** State (1): entering unfocused camera view */
+export async function playBeepUnfocused() {
+  if (await playFile('beep', 0.85)) return;
+  playSynthBeep();
+}
+
+function playSynthBeep() {
+  const c = getCtx();
+  if (!c) return;
+  const now = c.currentTime;
+  const osc = c.createOscillator();
+  const g = c.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(660, now);
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.1, now + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  osc.connect(g);
+  g.connect(c.destination);
+  osc.start(now);
+  osc.stop(now + 0.14);
+}
+
+/** Focus sound — file or rising tones */
+export async function playFocusSound() {
+  if (await playFile('focus', 0.9)) return;
+  playSynthFocus();
+}
+
+function playSynthFocus() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
@@ -39,8 +118,13 @@ export function playFocusSound() {
   mkBeep(1320, now + 0.07, 0.08);
 }
 
-/** Shutter: noise burst + soft thump */
-export function playShutterSound() {
+/** Shutter — file or noise burst */
+export async function playShutterSound() {
+  if (await playFile('shutter', 0.95)) return;
+  playSynthShutter();
+}
+
+function playSynthShutter() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
@@ -77,4 +161,9 @@ export function playShutterSound() {
   g2.connect(c.destination);
   osc.start(now);
   osc.stop(now + 0.15);
+}
+
+/** Instant print motor — file only (long); no small fallback */
+export async function playPrintSound() {
+  await playFile('print', 1);
 }

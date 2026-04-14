@@ -1,4 +1,4 @@
-/* Creature Click — simple, touch-friendly UI for small kids */
+/* Creature Click — camera drift, Polaroid prints, countdown */
 
 :root {
   --bg: #0f2419;
@@ -10,6 +10,9 @@
   --shadow: rgba(0, 0, 0, 0.35);
   --radius: 1rem;
   --font: system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --polaroid-pad: 0.65rem;
+  --polaroid-bottom: 2.25rem;
+  --countdown-h: 3.25rem;
 }
 
 *,
@@ -32,6 +35,10 @@ body {
   background: radial-gradient(ellipse 120% 80% at 50% 0%, #2a5c45 0%, var(--bg) 55%);
 }
 
+body.is-waiting {
+  padding-top: var(--countdown-h);
+}
+
 a {
   color: var(--accent);
 }
@@ -39,6 +46,38 @@ a {
 a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* —— Fixed countdown (waiting state) —— */
+.countdown-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: var(--countdown-h);
+  padding: 0.4rem 1rem;
+  padding-top: max(0.4rem, env(safe-area-inset-top));
+  background: linear-gradient(180deg, rgba(10, 24, 16, 0.97) 0%, rgba(15, 36, 25, 0.94) 100%);
+  border-bottom: 1px solid rgba(125, 211, 168, 0.25);
+  box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.35);
+}
+
+.countdown-bar__label {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+
+.countdown-bar__clock {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
 }
 
 .app {
@@ -86,30 +125,24 @@ a:focus-visible {
   display: none !important;
 }
 
-.cooldown-panel {
+.waiting-panel {
   text-align: center;
-  padding: 1.5rem 1rem;
+  padding: 1.25rem 1rem;
 }
 
-.panel-title {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
+.waiting-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
 }
 
-.cooldown-message {
+.waiting-panel__hint {
   margin: 0;
+  font-size: 0.98rem;
   color: var(--text-soft);
 }
 
-.cooldown-message strong {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.hint {
-  margin: 1rem 0 0;
-  font-size: 0.95rem;
-  color: var(--text-soft);
+.play-panel {
+  padding-bottom: 1.25rem;
 }
 
 .viewfinder {
@@ -126,6 +159,50 @@ a:focus-visible {
 .viewfinder:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
+}
+
+.creature-stack {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.creature-drift {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.viewfinder.is-camera-live .creature-drift {
+  animation: hand-drift 4.8s ease-in-out infinite;
+}
+
+.viewfinder.is-camera-live.is-printing .creature-drift {
+  animation: none;
+}
+
+@keyframes hand-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(1.4%, -1.1%) rotate(0.55deg);
+  }
+  40% {
+    transform: translate(-1.2%, 0.9%) rotate(-0.45deg);
+  }
+  60% {
+    transform: translate(0.9%, 1.2%) rotate(0.35deg);
+  }
+  80% {
+    transform: translate(-1%, -0.6%) rotate(-0.3deg);
+  }
 }
 
 .creature-img {
@@ -148,6 +225,7 @@ a:focus-visible {
   position: absolute;
   inset: 0;
   box-shadow: inset 0 0 4rem rgba(0, 0, 0, 0.45);
+  z-index: 1;
 }
 
 .phase-hint {
@@ -166,14 +244,7 @@ a:focus-visible {
   background: rgba(15, 36, 25, 0.72);
   border-radius: 999px;
   pointer-events: none;
-}
-
-.animal-label {
-  margin: 1rem 0 0;
-  text-align: center;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--accent);
+  z-index: 2;
 }
 
 .btn {
@@ -215,6 +286,68 @@ a:focus-visible {
   border-radius: var(--radius);
 }
 
+/* —— Polaroid base —— */
+.polaroid {
+  background: #f5f2eb;
+  box-shadow:
+    0 0.15rem 0.5rem rgba(0, 0, 0, 0.12),
+    0 0.8rem 2rem rgba(0, 0, 0, 0.28);
+  border-radius: 2px;
+}
+
+.polaroid__photo {
+  background: #0a1810;
+  overflow: hidden;
+}
+
+.polaroid__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.polaroid__caption {
+  margin: 0;
+  min-height: var(--polaroid-bottom);
+  padding: 0.5rem var(--polaroid-pad) 0.65rem;
+  font-family: "Segoe Print", "Bradley Hand", "Snell Roundhand", "Comic Sans MS", cursive;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  color: #2a2825;
+}
+
+/* Emerging print (state 3) */
+.print-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 1rem max(1.5rem, env(safe-area-inset-bottom));
+  pointer-events: auto;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+.polaroid--print {
+  width: min(88vw, 20rem);
+  padding: var(--polaroid-pad) var(--polaroid-pad) 0;
+  transform: translate3d(0, 120vh, 0);
+  transition: transform 1.15s cubic-bezier(0.25, 0.82, 0.28, 1);
+  pointer-events: none;
+}
+
+.polaroid--print.is-emerged {
+  transform: translate3d(0, 0, 0);
+}
+
+.polaroid--print .polaroid__photo {
+  aspect-ratio: 1;
+}
+
+/* Collection grid — small Polaroids (static, no drift) */
 .section-heading {
   margin: 0 0 0.75rem;
   font-size: 1.25rem;
@@ -231,38 +364,100 @@ a:focus-visible {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 1rem;
 }
 
 .collection-item {
   margin: 0;
-  border-radius: calc(var(--radius) - 4px);
-  overflow: hidden;
-  background: var(--bg-card);
-  box-shadow: 0 0.25rem 0.75rem var(--shadow);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border-radius: 3px;
+  transition: transform 0.2s ease;
 }
 
-.collection-thumb-wrap {
+.collection-item:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.collection-item:active {
+  transform: scale(0.98);
+}
+
+.polaroid--thumb {
+  width: 100%;
+  padding: 0.45rem 0.45rem 0;
+  box-shadow:
+    0 0.1rem 0.35rem rgba(0, 0, 0, 0.15),
+    0 0.45rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+.polaroid--thumb .polaroid__photo {
   aspect-ratio: 1;
-  overflow: hidden;
+}
+
+.polaroid--thumb .polaroid__caption {
+  font-size: 0.88rem;
+  min-height: 2rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(8, 18, 12, 0.82);
+  cursor: pointer;
+}
+
+.lightbox .polaroid--large {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 24rem);
+  max-height: min(88dvh, 40rem);
+  padding: 0.75rem 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.polaroid--large .polaroid__photo {
+  flex: 1;
+  min-height: 0;
+  max-height: calc(88dvh - 6rem);
+}
+
+.polaroid--large .polaroid__img {
+  max-height: calc(88dvh - 6rem);
+  object-fit: contain;
   background: #0a1810;
 }
 
-.collection-thumb {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.collection-caption {
-  margin: 0;
-  padding: 0.5rem 0.6rem 0.65rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-align: center;
-  color: var(--text);
+.polaroid--large .polaroid__caption {
+  font-size: 1.15rem;
+  flex-shrink: 0;
 }
 
 .footer {
@@ -275,4 +470,14 @@ a:focus-visible {
   margin: 0;
   font-size: 0.85rem;
   color: var(--text-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creature-drift {
+    animation: none !important;
+  }
+
+  .polaroid--print {
+    transition-duration: 0.01ms;
+  }
 }
