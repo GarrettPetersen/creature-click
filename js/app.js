@@ -1,4 +1,4 @@
-import { pickRandomCreature } from './creatures.js';
+import { loadCatalog, pickRandomAnimal } from './catalog.js';
 import {
   COOLDOWN_MS,
   getCooldownUntil,
@@ -6,7 +6,6 @@ import {
   getPhotos,
   addPhoto,
 } from './storage.js';
-import { fetchCreatureImage } from './wikimedia.js';
 import { unlockAudio, playFocusSound, playShutterSound } from './sounds.js';
 
 const els = {
@@ -94,20 +93,14 @@ function shufflePhaseUI() {
   phase = 'blurred';
 }
 
-async function loadCreatureWithRetries(excludeFile, attempts = 4) {
-  let lastErr = 'Could not load a picture.';
-  let skip = excludeFile;
-  for (let i = 0; i < attempts; i++) {
-    const creature = pickRandomCreature(skip);
-    skip = creature.file;
-    try {
-      const urls = await fetchCreatureImage(creature.file);
-      return { creature, ...urls };
-    } catch (e) {
-      lastErr = e instanceof Error ? e.message : lastErr;
-    }
-  }
-  throw new Error(lastErr);
+function pickAnimalPayload(excludeId) {
+  const row = pickRandomAnimal(excludeId);
+  if (!row) throw new Error('No animals in catalog.');
+  return {
+    creature: row,
+    fullUrl: row.imageUrl,
+    thumbUrl: row.thumbUrl,
+  };
 }
 
 async function beginRound() {
@@ -118,7 +111,7 @@ async function beginRound() {
   shufflePhaseUI();
   els.newCreatureBtn.disabled = true;
   try {
-    const data = await loadCreatureWithRetries(null);
+    const data = pickAnimalPayload(null);
     currentCreature = data;
     els.creatureImg.alt = `${data.creature.name} — out of focus`;
     els.creatureImg.src = data.fullUrl;
@@ -136,9 +129,9 @@ async function swapCreature() {
   loadLock = true;
   setLoadError('');
   els.newCreatureBtn.disabled = true;
-  const exclude = currentCreature.creature.file;
+  const excludeId = currentCreature.creature.id;
   try {
-    const data = await loadCreatureWithRetries(exclude);
+    const data = pickAnimalPayload(excludeId);
     currentCreature = data;
     els.creatureImg.alt = `${data.creature.name} — out of focus`;
     els.creatureImg.src = data.fullUrl;
@@ -213,7 +206,16 @@ async function onViewfinderActivate() {
   }
 }
 
-function init() {
+async function bootstrap() {
+  try {
+    await loadCatalog();
+  } catch (e) {
+    setLoadError(e instanceof Error ? e.message : 'Could not load animals.');
+    els.playPanel.classList.add('hidden');
+    els.cooldownPanel.classList.add('hidden');
+    return;
+  }
+
   renderCollection();
   if (isCooldownActive()) {
     showCooldownUI();
@@ -245,4 +247,4 @@ els.viewfinder.setAttribute(
   'Camera view — tap to focus, tap again to take a picture'
 );
 
-init();
+bootstrap();

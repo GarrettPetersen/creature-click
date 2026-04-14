@@ -2,7 +2,8 @@
   "name": "creature-click",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-public.mjs"
+    "build": "node scripts/build-public.mjs",
+    "build:animals": "node scripts/build-animals-json.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.22.0"
