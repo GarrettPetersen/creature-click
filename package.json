@@ -2,12 +2,15 @@
   "name": "creature-click",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-public.mjs",
+    "build": "node scripts/generate-og-image.mjs && node scripts/build-public.mjs",
+    "build:public": "node scripts/build-public.mjs",
+    "generate:og": "node scripts/generate-og-image.mjs",
     "build:animals": "node scripts/build-animals-json.mjs",
     "verify:animals": "node scripts/verify-animal-sources.mjs",
     "harvest:animals": "node scripts/harvest-animals-wikidata.mjs"
   },
   "devDependencies": {
+    "sharp": "^0.33.5",
     "wrangler": "^4.22.0"
   }
 }

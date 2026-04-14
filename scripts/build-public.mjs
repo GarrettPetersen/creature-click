@@ -13,6 +13,9 @@ await cp(path.join(root, 'cull.html'), path.join(out, 'cull.html'));
 await cp(path.join(root, 'css'), path.join(out, 'css'), { recursive: true });
 await cp(path.join(root, 'js'), path.join(out, 'js'), { recursive: true });
 await cp(path.join(root, 'data'), path.join(out, 'data'), { recursive: true });
+if (existsSync(path.join(root, 'og-image.png'))) {
+  await cp(path.join(root, 'og-image.png'), path.join(out, 'og-image.png'));
+}
 if (existsSync(path.join(root, 'sounds'))) {
   await cp(path.join(root, 'sounds'), path.join(out, 'sounds'), { recursive: true });
 }
