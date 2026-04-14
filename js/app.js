@@ -5,6 +5,8 @@ import {
   setCooldownUntil,
   getPhotos,
   addPhoto,
+  clearCooldown,
+  clearPhotos,
 } from './storage.js';
 import {
   unlockAudio,
@@ -17,17 +19,15 @@ import {
 const PRINT_FALLBACK_MS = 1300;
 const PRINT_FALLBACK_REDUCED_MS = 80;
 
+/** Dev: Ctrl+Shift+Alt+R — clears cooldown & album, returns to camera (testing only). */
+
 const els = {
   countdownBar: document.getElementById('countdown-bar'),
   countdownClock: document.getElementById('countdown-clock'),
-  waitingPanel: document.getElementById('waiting-panel'),
   playPanel: document.getElementById('play-panel'),
   viewfinder: document.getElementById('viewfinder'),
   creatureImg: document.getElementById('creature-img'),
-  phaseHint: document.getElementById('phase-hint'),
   newCreatureBtn: document.getElementById('new-creature-btn'),
-  loadError: document.getElementById('load-error'),
-  collectionEmpty: document.getElementById('collection-empty'),
   collectionGrid: document.getElementById('collection-grid'),
   printStage: document.getElementById('print-stage'),
   emergingPolaroid: document.getElementById('emerging-polaroid'),
@@ -41,7 +41,6 @@ const els = {
 };
 
 /**
- * camera_unfocused | camera_focused | taking_picture | waiting
  * @type {'camera_unfocused' | 'camera_focused' | 'taking_picture' | 'waiting'}
  */
 let gameState = 'camera_unfocused';
@@ -73,7 +72,6 @@ function setWaitingChrome(visible) {
 function showWaitingUI() {
   gameState = 'waiting';
   els.playPanel.classList.add('hidden');
-  els.waitingPanel.classList.remove('hidden');
   setWaitingChrome(true);
   updateCooldownLabel();
   if (cooldownTimer) clearInterval(cooldownTimer);
@@ -82,7 +80,6 @@ function showWaitingUI() {
       clearInterval(cooldownTimer);
       cooldownTimer = null;
       setWaitingChrome(false);
-      els.waitingPanel.classList.add('hidden');
       beginRound();
       return;
     }
@@ -104,14 +101,8 @@ function setCameraPrinting(on) {
   els.viewfinder.classList.toggle('is-printing', on);
 }
 
-function setLoadError(message) {
-  if (!message) {
-    els.loadError.classList.add('hidden');
-    els.loadError.textContent = '';
-    return;
-  }
-  els.loadError.textContent = message;
-  els.loadError.classList.remove('hidden');
+function setLoadError(on) {
+  els.playPanel.classList.toggle('has-load-error', !!on);
 }
 
 function resetCameraUnfocusedUI() {
@@ -119,7 +110,6 @@ function resetCameraUnfocusedUI() {
   els.viewfinder.classList.remove('is-focused');
   setCameraPrinting(false);
   setCameraLive(true);
-  els.phaseHint.textContent = 'Tap the picture to focus your camera.';
   els.newCreatureBtn.classList.remove('hidden');
 }
 
@@ -135,8 +125,9 @@ function pickAnimalPayload(excludeId) {
 
 async function beginRound() {
   loadLock = true;
-  setLoadError('');
+  setLoadError(false);
   els.creatureImg.removeAttribute('src');
+  els.creatureImg.alt = '';
   currentCreature = null;
   resetCameraUnfocusedUI();
   els.newCreatureBtn.disabled = true;
@@ -144,13 +135,12 @@ async function beginRound() {
   try {
     const data = pickAnimalPayload(null);
     currentCreature = data;
-    els.creatureImg.alt = `${data.creature.name} — out of focus`;
     els.creatureImg.src = data.fullUrl;
     await els.creatureImg.decode().catch(() => {});
     await unlockAudio();
     await playBeepUnfocused();
-  } catch (e) {
-    setLoadError(e instanceof Error ? e.message : 'Something went wrong.');
+  } catch {
+    setLoadError(true);
     setCameraLive(false);
   } finally {
     loadLock = false;
@@ -161,34 +151,30 @@ async function beginRound() {
 async function swapCreature() {
   if (gameState !== 'camera_unfocused' || !currentCreature || loadLock) return;
   loadLock = true;
-  setLoadError('');
+  setLoadError(false);
   els.newCreatureBtn.disabled = true;
   const excludeId = currentCreature.creature.id;
   try {
     const data = pickAnimalPayload(excludeId);
     currentCreature = data;
-    els.creatureImg.alt = `${data.creature.name} — out of focus`;
+    els.creatureImg.alt = '';
     els.creatureImg.src = data.fullUrl;
     await els.creatureImg.decode().catch(() => {});
     await unlockAudio();
     await playBeepUnfocused();
     resetCameraUnfocusedUI();
-  } catch (e) {
-    setLoadError(e instanceof Error ? e.message : 'Something went wrong.');
+  } catch {
+    setLoadError(true);
   } finally {
     loadLock = false;
     els.newCreatureBtn.disabled = false;
   }
 }
 
-/**
- * @param {string} imageUrl
- * @param {string} caption
- */
 function runPrintEmergence(imageUrl, caption) {
   const el = els.emergingPolaroid;
   els.printImg.src = imageUrl;
-  els.printImg.alt = caption;
+  els.printImg.alt = '';
   els.printCaption.textContent = caption;
   els.printStage.classList.remove('hidden');
   els.printStage.setAttribute('aria-hidden', 'false');
@@ -226,13 +212,11 @@ function hidePrintStage() {
 
 function renderCollection() {
   const photos = getPhotos();
-  els.collectionEmpty.classList.toggle('hidden', photos.length > 0);
   els.collectionGrid.replaceChildren();
   for (const p of photos) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'collection-item';
-    btn.setAttribute('aria-label', `Open photo of ${p.animalName}`);
 
     const polaroid = document.createElement('div');
     polaroid.className = 'polaroid polaroid--thumb';
@@ -242,7 +226,7 @@ function renderCollection() {
     const img = document.createElement('img');
     img.className = 'polaroid__img';
     img.src = p.thumbUrl || p.imageUrl;
-    img.alt = p.animalName;
+    img.alt = '';
     img.loading = 'lazy';
     photoWrap.appendChild(img);
 
@@ -264,7 +248,7 @@ function openLightbox(photo) {
   lastScrollYForLightbox = window.scrollY;
   lightboxTouchY = null;
   els.lightboxImg.src = photo.imageUrl;
-  els.lightboxImg.alt = photo.animalName;
+  els.lightboxImg.alt = '';
   els.lightboxCaption.textContent = photo.animalName;
   els.lightbox.classList.remove('hidden');
   els.lightbox.setAttribute('aria-hidden', 'false');
@@ -286,6 +270,36 @@ function onWindowScroll() {
   }
 }
 
+async function devResetGame() {
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer);
+    cooldownTimer = null;
+  }
+  closeLightbox();
+  hidePrintStage();
+  setLoadError(false);
+  clearCooldown();
+  clearPhotos();
+  renderCollection();
+  setWaitingChrome(false);
+  els.playPanel.classList.remove('hidden');
+  gameState = 'camera_unfocused';
+  loadLock = false;
+  setCameraPrinting(false);
+
+  try {
+    await loadCatalog();
+    document.body.classList.remove('no-catalog');
+  } catch {
+    document.body.classList.add('no-catalog');
+    els.playPanel.classList.add('hidden');
+    return;
+  }
+
+  renderCollection();
+  await beginRound();
+}
+
 async function onViewfinderActivate() {
   if (loadLock || isCooldownActive() || !currentCreature || gameState === 'taking_picture') return;
   await unlockAudio();
@@ -294,8 +308,7 @@ async function onViewfinderActivate() {
     await playFocusSound();
     gameState = 'camera_focused';
     els.viewfinder.classList.add('is-focused');
-    els.phaseHint.textContent = 'Tap again to take the picture!';
-    els.creatureImg.alt = `${currentCreature.creature.name} — in focus`;
+    els.creatureImg.alt = '';
     els.newCreatureBtn.classList.add('hidden');
     return;
   }
@@ -334,20 +347,16 @@ async function onViewfinderActivate() {
 async function bootstrap() {
   try {
     await loadCatalog();
-  } catch (e) {
-    setLoadError(e instanceof Error ? e.message : 'Could not load animals.');
+    renderCollection();
+    if (isCooldownActive()) {
+      showWaitingUI();
+    } else {
+      setWaitingChrome(false);
+      beginRound();
+    }
+  } catch {
+    document.body.classList.add('no-catalog');
     els.playPanel.classList.add('hidden');
-    els.waitingPanel.classList.add('hidden');
-    return;
-  }
-
-  renderCollection();
-  if (isCooldownActive()) {
-    showWaitingUI();
-  } else {
-    setWaitingChrome(false);
-    els.waitingPanel.classList.add('hidden');
-    beginRound();
   }
 
   els.viewfinder.addEventListener('click', () => {
@@ -391,6 +400,11 @@ async function bootstrap() {
     if (e.key === 'Escape' && lightboxOpen) {
       e.preventDefault();
       closeLightbox();
+      return;
+    }
+    if (e.ctrlKey && e.shiftKey && e.altKey && e.code === 'KeyR') {
+      e.preventDefault();
+      void devResetGame();
     }
   });
 

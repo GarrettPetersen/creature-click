@@ -13,6 +13,14 @@ export function setCooldownUntil(timestampMs) {
   localStorage.setItem(`${PREFIX}.cooldownUntil`, String(timestampMs));
 }
 
+export function clearCooldown() {
+  localStorage.removeItem(`${PREFIX}.cooldownUntil`);
+}
+
+export function clearPhotos() {
+  localStorage.removeItem(`${PREFIX}.photos`);
+}
+
 export function getPhotos() {
   try {
     const raw = localStorage.getItem(`${PREFIX}.photos`);

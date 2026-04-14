@@ -4,37 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1a3d2e" />
-    <meta name="description" content="Creature Click — a gentle wildlife photographer game for little explorers." />
-    <title>Creature Click</title>
+    <title></title>
     <link rel="preconnect" href="https://commons.wikimedia.org" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
     <div id="countdown-bar" class="countdown-bar hidden" role="timer" aria-live="polite" aria-atomic="true">
-      <span class="countdown-bar__label">Next animal in</span>
-      <span id="countdown-clock" class="countdown-bar__clock">—:—</span>
+      <span id="countdown-clock" class="countdown-bar__clock"></span>
     </div>
 
     <div class="app">
-      <header class="header">
-        <h1 class="title">Creature Click</h1>
-        <p class="tagline">Wildlife photographer</p>
-      </header>
-
       <main class="main">
-        <section class="stage" aria-label="Camera and photos">
-          <div id="waiting-panel" class="panel waiting-panel hidden" role="status">
-            <p class="waiting-panel__title">Camera resting</p>
-            <p class="waiting-panel__hint">Scroll down to open your photo album. Tap a picture to see it big.</p>
-          </div>
-
+        <section class="stage" aria-label="Game">
           <div id="play-panel" class="panel play-panel">
             <div
               class="viewfinder"
               id="viewfinder"
               tabindex="0"
               role="button"
-              aria-label="Camera — tap to focus, tap again to take a picture"
+              aria-label="Camera"
             >
               <div class="creature-stack">
                 <div class="creature-drift" id="creature-drift" aria-hidden="true">
@@ -42,24 +30,22 @@
                 </div>
               </div>
               <div class="vignette" aria-hidden="true"></div>
-              <p id="phase-hint" class="phase-hint" aria-live="polite">Tap the picture to focus your camera.</p>
             </div>
-            <button type="button" id="new-creature-btn" class="btn secondary hidden">Find another animal</button>
+            <button type="button" id="new-creature-btn" class="btn-icon hidden" aria-label="Another animal">
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                <path d="M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L1 14" />
+              </svg>
+            </button>
           </div>
-
-          <p id="load-error" class="load-error hidden" role="alert"></p>
         </section>
 
-        <section class="collection-section" aria-labelledby="collection-heading">
-          <h2 id="collection-heading" class="section-heading">My pictures</h2>
-          <p id="collection-empty" class="collection-empty">No photos yet. When you take one, it will show up here.</p>
-          <ul id="collection-grid" class="collection-grid" aria-label="Photo collection"></ul>
+        <section class="collection-section">
+          <ul id="collection-grid" class="collection-grid" aria-label="Photos"></ul>
         </section>
       </main>
-
-      <footer class="footer">
-        <p class="credit">Photos from <a href="https://commons.wikimedia.org/" rel="noopener noreferrer" target="_blank">Wikimedia Commons</a>.</p>
-      </footer>
     </div>
 
     <div id="print-stage" class="print-stage hidden" aria-hidden="true">
@@ -71,8 +57,8 @@
       </div>
     </div>
 
-    <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Enlarged photo" aria-hidden="true">
-      <button type="button" class="lightbox__backdrop" id="lightbox-backdrop" aria-label="Close photo"></button>
+    <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-hidden="true">
+      <button type="button" class="lightbox__backdrop" id="lightbox-backdrop" aria-label="Close"></button>
       <div class="polaroid polaroid--large" id="lightbox-card">
         <div class="polaroid__photo">
           <img id="lightbox-img" class="polaroid__img" alt="" decoding="async" />
