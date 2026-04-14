@@ -91,7 +91,7 @@ export async function unlockAudio() {
 
 /** State (1): entering unfocused camera view */
 export async function playBeepUnfocused() {
-  if (await playFile('beep', 0.85)) return;
+  if (await playFile('beep', 0.425)) return;
   playSynthBeep();
 }
 
@@ -104,7 +104,7 @@ function playSynthBeep() {
   osc.type = 'sine';
   osc.frequency.setValueAtTime(660, now);
   g.gain.setValueAtTime(0.0001, now);
-  g.gain.exponentialRampToValueAtTime(0.1, now + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
   g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
   osc.connect(g);
   g.connect(c.destination);

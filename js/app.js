@@ -18,7 +18,7 @@ import {
   playPrintSound,
 } from './sounds.js';
 
-const PRINT_FALLBACK_MS = 7200;
+const PRINT_FALLBACK_MS = 5600;
 const PRINT_FALLBACK_REDUCED_MS = 80;
 const DONUT_R = 40;
 const DONUT_C = 2 * Math.PI * DONUT_R;
@@ -345,16 +345,25 @@ function runPrintEmergence(imageUrl, caption, direction) {
     const fallbackMs = prefersReduced ? PRINT_FALLBACK_REDUCED_MS : PRINT_FALLBACK_MS;
 
     const done = () => {
-      el.removeEventListener('transitionend', onEnd);
+      el.removeEventListener('transitionend', onTransitionEnd);
+      el.removeEventListener('animationend', onAnimationEnd);
       clearTimeout(fallback);
       resolve();
     };
 
-    const onEnd = (e) => {
+    const onTransitionEnd = (e) => {
       if (e.target === el && e.propertyName === 'transform') done();
     };
 
-    el.addEventListener('transitionend', onEnd);
+    const onAnimationEnd = (e) => {
+      if (e.target === el && e.animationName === 'print-emerge') done();
+    };
+
+    if (prefersReduced) {
+      el.addEventListener('transitionend', onTransitionEnd);
+    } else {
+      el.addEventListener('animationend', onAnimationEnd);
+    }
     const fallback = setTimeout(done, fallbackMs);
 
     requestAnimationFrame(() => {
