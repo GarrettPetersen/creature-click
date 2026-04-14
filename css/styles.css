@@ -114,6 +114,41 @@ body.phase-camera.is-focused .creature-bg__img {
   pointer-events: none;
 }
 
+/* —— Center reticle (below .camera-hit so taps still hit the lens) —— */
+.camera-reticle {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  width: min(10.5vw, 3.125rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+  color: #fff;
+  opacity: 0.3;
+}
+
+body.phase-waiting .camera-reticle,
+body:not(.phase-camera) .camera-reticle {
+  display: none;
+}
+
+.camera-reticle__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.camera-reticle__fill {
+  fill: currentColor;
+}
+
+.camera-reticle__ring {
+  stroke: currentColor;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
 /* —— Invisible tap target over full screen (camera only) —— */
 .camera-hit {
   position: fixed;
