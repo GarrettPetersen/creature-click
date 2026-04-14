@@ -4,7 +4,11 @@
 # ./public is generated and gitignored. Run `npm run build` before upload, or use:
 #   npm run deploy
 name = "creature-click"
+main = "worker.js"
 compatibility_date = "2026-04-13"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
+# Serve static files first; avoid a dashboard default worker answering before assets.
+run_worker_first = false
