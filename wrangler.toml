@@ -1,0 +1,7 @@
+# Static site on Workers (assets-only; no main script).
+# https://developers.cloudflare.com/workers/static-assets/
+name = "creature-click"
+compatibility_date = "2026-04-13"
+
+[assets]
+directory = "./public"

@@ -1,0 +1,10 @@
+{
+  "name": "creature-click",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-public.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.22.0"
+  }
+}

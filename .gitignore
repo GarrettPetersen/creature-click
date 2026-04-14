@@ -2,3 +2,8 @@
 *.log
 .env
 .env.*
+
+node_modules/
+
+# Generated for Cloudflare Workers static assets (see npm run build)
+public/
