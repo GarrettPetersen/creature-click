@@ -118,7 +118,8 @@ body.phase-camera.is-focused .creature-bg__img {
 .camera-hit {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  /* Above .album-modal (10) so nothing can sit between taps and the creature view. */
+  z-index: 20;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;

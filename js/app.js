@@ -288,14 +288,21 @@ async function beginRound() {
     els.creatureImg.src = data.fullUrl;
     applyImageFocus(els.creatureImg, data.creature.direction);
     await withDecodeTimeout(els.creatureImg.decode().catch(() => {}), 2500);
-    await unlockAudio();
-    await playBeepUnfocused();
     void preloadNextRound();
   } catch {
     setLoadError(true);
     setCameraLive(false);
   } finally {
     loadLock = false;
+  }
+  /* Audio can stall indefinitely in some browsers; never keep loadLock for it. */
+  if (currentCreature && !document.body.classList.contains('has-load-error')) {
+    try {
+      await unlockAudio();
+      await playBeepUnfocused();
+    } catch {
+      /* ignore */
+    }
   }
 }
 

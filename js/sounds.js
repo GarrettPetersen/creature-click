@@ -40,9 +40,19 @@ async function playFile(key, volume = 1) {
   const a = base.cloneNode(true);
   a.volume = Math.min(1, Math.max(0, volume));
   try {
-    await a.play();
+    await Promise.race([
+      a.play(),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('play timeout')), 5000);
+      }),
+    ]);
     return true;
   } catch {
+    try {
+      a.pause();
+    } catch {
+      /* ignore */
+    }
     return false;
   }
 }
@@ -61,7 +71,18 @@ function getCtx() {
 export async function unlockAudio() {
   const c = getCtx();
   if (!c) return;
-  if (c.state === 'suspended') await c.resume();
+  if (c.state === 'suspended') {
+    try {
+      await Promise.race([
+        c.resume(),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('resume timeout')), 3000);
+        }),
+      ]);
+    } catch {
+      /* Autoplay policy or a stuck context must not block the game. */
+    }
+  }
   getClip('beep');
   getClip('focus');
   getClip('shutter');
