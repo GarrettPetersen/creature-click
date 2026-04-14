@@ -9,43 +9,53 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <div id="countdown-bar" class="countdown-bar hidden" role="timer" aria-live="polite" aria-atomic="true">
-      <span id="countdown-clock" class="countdown-bar__clock"></span>
+    <div id="creature-bg" class="creature-bg" aria-hidden="true">
+      <div class="creature-bg__drift" id="creature-drift">
+        <img id="creature-img" class="creature-bg__img" alt="" width="800" height="600" decoding="async" />
+      </div>
+      <div class="creature-bg__vignette" aria-hidden="true"></div>
     </div>
 
-    <div class="app">
-      <main class="main">
-        <section class="stage" aria-label="Game">
-          <div id="play-panel" class="panel play-panel">
-            <div
-              class="viewfinder"
-              id="viewfinder"
-              tabindex="0"
-              role="button"
-              aria-label="Camera"
-            >
-              <div class="creature-stack">
-                <div class="creature-drift" id="creature-drift" aria-hidden="true">
-                  <img id="creature-img" class="creature-img" alt="" width="800" height="600" decoding="async" />
-                </div>
-              </div>
-              <div class="vignette" aria-hidden="true"></div>
-            </div>
-            <button type="button" id="new-creature-btn" class="btn-icon hidden" aria-label="Another animal">
-              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 4v6h-6" />
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                <path d="M1 20v-6h6" />
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L1 14" />
-              </svg>
-            </button>
-          </div>
-        </section>
+    <div
+      id="camera-hit"
+      class="camera-hit"
+      tabindex="0"
+      role="button"
+      aria-label="Camera"
+    ></div>
 
-        <section class="collection-section">
-          <ul id="collection-grid" class="collection-grid" aria-label="Photos"></ul>
-        </section>
-      </main>
+    <button type="button" id="swap-btn" class="swap-fab hidden" aria-label="Another animal">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 4v6h-6" />
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+        <path d="M1 20v-6h6" />
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L1 14" />
+      </svg>
+    </button>
+
+    <div id="album-modal" class="album-modal hidden" role="dialog" aria-modal="false" aria-hidden="true">
+      <div id="album-scroll" class="album-modal__inner">
+        <header class="album-modal__hero">
+          <div class="donut-block">
+            <svg class="donut-svg" viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="donut-svg__track" cx="50" cy="50" r="40" fill="none" stroke-width="7" />
+              <circle
+                id="donut-progress"
+                class="donut-svg__progress"
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke-width="7"
+                stroke-linecap="round"
+                transform="rotate(-90 50 50)"
+              />
+            </svg>
+            <div id="modal-countdown" class="donut-block__time" role="timer" aria-live="polite"></div>
+          </div>
+        </header>
+        <div id="album-list" class="album-list"></div>
+      </div>
     </div>
 
     <div id="print-stage" class="print-stage hidden" aria-hidden="true">
@@ -57,14 +67,9 @@
       </div>
     </div>
 
-    <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-hidden="true">
-      <button type="button" class="lightbox__backdrop" id="lightbox-backdrop" aria-label="Close"></button>
-      <div class="polaroid polaroid--large" id="lightbox-card">
-        <div class="polaroid__photo">
-          <img id="lightbox-img" class="polaroid__img" alt="" decoding="async" />
-        </div>
-        <p class="polaroid__caption" id="lightbox-caption"></p>
-      </div>
+    <div id="expand-layer" class="expand-layer hidden" aria-hidden="true">
+      <button type="button" class="expand-layer__backdrop" id="expand-backdrop" aria-label="Close"></button>
+      <div id="expand-fly" class="expand-fly"></div>
     </div>
 
     <script type="module" src="js/app.js"></script>

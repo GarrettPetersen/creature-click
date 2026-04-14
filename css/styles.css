@@ -1,17 +1,13 @@
-/* Creature Click — minimal UI: countdown digits + names on Polaroids only */
+/* Full-screen camera; blurred bg; white album modal + donut countdown */
 
 :root {
-  --bg: #0f2419;
-  --bg-card: #1a3d2e;
-  --text: #f4f7f5;
   --accent: #7dd3a8;
-  --accent-dark: #4a9d73;
-  --shadow: rgba(0, 0, 0, 0.35);
-  --radius: 1rem;
-  --font: system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --polaroid-pad: 0.65rem;
-  --polaroid-bottom: 2.25rem;
-  --countdown-h: 2.85rem;
+  --accent-dark: #3d8f62;
+  --donut-track: #e6e4df;
+  --donut-fill: #7dd3a8;
+  --modal-bg: #faf9f7;
+  --print-duration: 7s;
+  --donut-circ: 251.33;
 }
 
 *,
@@ -27,130 +23,53 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  font-family: var(--font);
-  font-size: 1.125rem;
-  line-height: 1.5;
-  color: var(--text);
-  background: radial-gradient(ellipse 120% 80% at 50% 0%, #2a5c45 0%, var(--bg) 55%);
-}
-
-body.is-waiting {
-  padding-top: var(--countdown-h);
+  overflow-x: hidden;
+  background: #0a1810;
 }
 
 body.no-catalog {
-  background: radial-gradient(ellipse 120% 80% at 50% 0%, #4a2525 0%, #1a0f0f 55%);
-}
-
-.countdown-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 150;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--countdown-h);
-  padding: 0.35rem 1rem;
-  padding-top: max(0.35rem, env(safe-area-inset-top));
-  background: linear-gradient(180deg, rgba(10, 24, 16, 0.97) 0%, rgba(15, 36, 25, 0.94) 100%);
-  border-bottom: 1px solid rgba(125, 211, 168, 0.22);
-  box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.35);
-}
-
-.countdown-bar__clock {
-  font-variant-numeric: tabular-nums;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-}
-
-.app {
-  max-width: 42rem;
-  margin: 0 auto;
-  padding: 0.75rem 1rem 2rem;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.panel {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 1rem;
-  box-shadow: 0 0.5rem 1.5rem var(--shadow);
+  background: #1a0f0f;
 }
 
 .hidden {
   display: none !important;
 }
 
-.play-panel {
-  padding-bottom: 1rem;
-}
-
-.play-panel.has-load-error .viewfinder {
-  animation: error-pulse 1.2s ease-in-out infinite;
-  box-shadow: inset 0 0 0 3px rgba(255, 120, 120, 0.45);
-}
-
-@keyframes error-pulse {
-  0%,
-  100% {
-    box-shadow: inset 0 0 0 3px rgba(255, 120, 120, 0.35);
-  }
-  50% {
-    box-shadow: inset 0 0 0 3px rgba(255, 160, 140, 0.65);
-  }
-}
-
-.viewfinder {
-  position: relative;
-  border-radius: calc(var(--radius) - 4px);
-  overflow: hidden;
-  aspect-ratio: 4 / 3;
-  background: #0a1810;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.viewfinder:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
-}
-
-.creature-stack {
-  position: absolute;
+/* —— Full-screen creature (camera + blurred background) —— */
+.creature-bg {
+  position: fixed;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
   overflow: hidden;
 }
 
-.creature-drift {
+body.phase-camera .creature-bg {
+  z-index: 1;
+}
+
+body.phase-waiting .creature-bg {
+  z-index: 0;
+  filter: blur(18px) saturate(0.75);
+  transform: scale(1.06);
+}
+
+.creature-bg__drift {
   position: absolute;
-  inset: -5%;
-  width: 110%;
-  height: 110%;
+  inset: -6%;
+  width: 112%;
+  height: 112%;
   display: flex;
   align-items: center;
   justify-content: center;
-  will-change: transform;
 }
 
-.viewfinder.is-camera-live .creature-drift {
+body.phase-camera.is-camera-live .creature-bg__drift {
   animation: hand-drift 4.8s ease-in-out infinite;
 }
 
-.viewfinder.is-camera-live.is-printing .creature-drift {
+body.phase-camera.is-printing .creature-bg__drift,
+body.phase-waiting .creature-bg__drift {
   animation: none;
 }
 
@@ -173,62 +92,200 @@ body.no-catalog {
   }
 }
 
-.creature-img {
+.creature-bg__img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: blur(22px) saturate(0.85);
-  transform: scale(1.06);
+  filter: blur(22px) saturate(0.88);
+  transform: scale(1.04);
   transition: filter 0.55s ease-out, transform 0.55s ease-out;
 }
 
-.viewfinder.is-focused .creature-img {
+body.phase-camera.is-focused .creature-bg__img {
   filter: blur(0) saturate(1);
   transform: scale(1);
 }
 
-.vignette {
-  pointer-events: none;
+.creature-bg__vignette {
   position: absolute;
   inset: 0;
-  box-shadow: inset 0 0 4rem rgba(0, 0, 0, 0.45);
-  z-index: 1;
+  box-shadow: inset 0 0 5rem rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 
-.btn-icon {
+/* —— Invisible tap target over full screen (camera only) —— */
+.camera-hit {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  background: transparent;
+}
+
+body.phase-waiting .camera-hit,
+body:not(.phase-camera) .camera-hit {
+  display: none;
+}
+
+.camera-hit:focus-visible {
+  outline: none;
+}
+
+body.phase-camera.has-load-error .creature-bg {
+  animation: error-pulse-bg 1.2s ease-in-out infinite;
+}
+
+@keyframes error-pulse-bg {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 3px rgba(255, 100, 100, 0.25);
+  }
+  50% {
+    box-shadow: inset 0 0 0 3px rgba(255, 140, 120, 0.45);
+  }
+}
+
+.swap-fab {
+  position: fixed;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 3;
+  width: 3rem;
+  height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.1rem;
-  height: 3.1rem;
-  margin: 0.65rem auto 0;
   padding: 0;
-  color: var(--accent);
-  background: transparent;
-  border: 2px solid var(--accent-dark);
+  border: 2px solid rgba(255, 255, 255, 0.35);
   border-radius: 50%;
+  background: rgba(10, 24, 16, 0.45);
+  color: var(--accent);
   cursor: pointer;
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+}
+
+.swap-fab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+body.phase-waiting .swap-fab {
+  display: none;
+}
+
+/* —— White album modal —— */
+.album-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.album-modal:not(.hidden) {
+  pointer-events: auto;
+}
+
+.album-modal__inner {
+  width: 100%;
+  max-width: 28rem;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--modal-bg);
+  box-shadow: 0 0 3rem rgba(0, 0, 0, 0.35);
+  -webkit-overflow-scrolling: touch;
+}
+
+.album-modal__hero {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem 1.5rem;
+  background: linear-gradient(180deg, var(--modal-bg) 70%, rgba(250, 249, 247, 0.92) 100%);
+}
+
+.donut-block {
+  position: relative;
+  width: min(72vw, 220px);
+  height: min(72vw, 220px);
+  margin: 0 auto;
+}
+
+.donut-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.donut-svg__track {
+  stroke: var(--donut-track);
+}
+
+.donut-svg__progress {
+  stroke: var(--donut-fill);
+  stroke-dasharray: var(--donut-circ);
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.35s linear;
+}
+
+.donut-block__time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.75rem, 7vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2a2825;
+  pointer-events: none;
+}
+
+.album-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 1.25rem 3rem;
+}
+
+.album-item {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  max-width: 16.5rem;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-icon:focus-visible {
-  outline: 3px solid var(--text);
-  outline-offset: 3px;
+.album-item:focus-visible {
+  outline: 3px solid var(--accent-dark);
+  outline-offset: 6px;
+  border-radius: 4px;
 }
 
-.btn-icon:active {
-  transform: scale(0.96);
-  opacity: 0.9;
+.album-item .polaroid.is-source-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* —— Polaroid —— */
 .polaroid {
   background: #f5f2eb;
   box-shadow:
-    0 0.15rem 0.5rem rgba(0, 0, 0, 0.12),
-    0 0.8rem 2rem rgba(0, 0, 0, 0.28);
+    0 0.15rem 0.5rem rgba(0, 0, 0, 0.1),
+    0 0.6rem 1.5rem rgba(0, 0, 0, 0.18);
   border-radius: 2px;
 }
 
@@ -246,32 +303,46 @@ body.no-catalog {
 
 .polaroid__caption {
   margin: 0;
-  min-height: var(--polaroid-bottom);
-  padding: 0.5rem var(--polaroid-pad) 0.65rem;
+  min-height: 2.15rem;
+  padding: 0.5rem 0.55rem 0.6rem;
   font-family: "Segoe Print", "Bradley Hand", "Snell Roundhand", "Comic Sans MS", cursive;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-align: center;
   color: #2a2825;
 }
 
+.polaroid--thumb {
+  width: 100%;
+}
+
+.polaroid--thumb .polaroid__photo {
+  aspect-ratio: 1;
+}
+
+.polaroid--thumb .polaroid__caption {
+  font-size: 0.88rem;
+  min-height: 2rem;
+}
+
+/* Print emerging — 7s */
 .print-stage {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 100;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 0 1rem max(1.5rem, env(safe-area-inset-bottom));
+  padding: 0 1rem max(1.25rem, env(safe-area-inset-bottom));
   pointer-events: auto;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.35) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.25) 100%);
 }
 
 .polaroid--print {
-  width: min(88vw, 20rem);
-  padding: var(--polaroid-pad) var(--polaroid-pad) 0;
+  width: min(88vw, 19rem);
+  padding: 0.55rem 0.55rem 0;
   transform: translate3d(0, 120vh, 0);
-  transition: transform 1.15s cubic-bezier(0.25, 0.82, 0.28, 1);
+  transition: transform var(--print-duration) cubic-bezier(0.22, 0.99, 0.36, 1);
   pointer-events: none;
 }
 
@@ -283,120 +354,77 @@ body.no-catalog {
   aspect-ratio: 1;
 }
 
-.collection-section {
-  padding-bottom: 0.5rem;
-}
-
-.collection-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 1rem;
-}
-
-.collection-item {
-  margin: 0;
-  cursor: pointer;
-  border: none;
-  padding: 0;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  border-radius: 3px;
-  transition: transform 0.2s ease;
-}
-
-.collection-item:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
-}
-
-.collection-item:active {
-  transform: scale(0.98);
-}
-
-.polaroid--thumb {
-  width: 100%;
-  padding: 0.45rem 0.45rem 0;
-  box-shadow:
-    0 0.1rem 0.35rem rgba(0, 0, 0, 0.15),
-    0 0.45rem 1rem rgba(0, 0, 0, 0.2);
-}
-
-.polaroid--thumb .polaroid__photo {
-  aspect-ratio: 1;
-}
-
-.polaroid--thumb .polaroid__caption {
-  font-size: 0.88rem;
-  min-height: 2rem;
-  padding-bottom: 0.5rem;
-}
-
-.lightbox {
+/* Expand layer (FLIP) */
+.expand-layer {
   position: fixed;
   inset: 0;
-  z-index: 250;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  padding-top: max(1rem, env(safe-area-inset-top));
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 200;
+  pointer-events: none;
 }
 
-.lightbox__backdrop {
+.expand-layer:not(.hidden) {
+  pointer-events: auto;
+}
+
+.expand-layer__backdrop {
   position: absolute;
   inset: 0;
   border: none;
   padding: 0;
   margin: 0;
-  background: rgba(8, 18, 12, 0.82);
+  background: rgba(250, 249, 247, 0.55);
   cursor: pointer;
+  opacity: 0;
+  animation: expand-backdrop-in 0.35s ease forwards;
 }
 
-.lightbox .polaroid--large {
-  position: relative;
-  z-index: 1;
-  width: min(92vw, 24rem);
-  max-height: min(88dvh, 40rem);
-  padding: 0.75rem 0.75rem 0;
-  display: flex;
-  flex-direction: column;
+@keyframes expand-backdrop-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.expand-fly {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.expand-fly .polaroid {
   pointer-events: auto;
   cursor: pointer;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
 }
 
-.polaroid--large .polaroid__photo {
+.expand-fly .polaroid__photo {
   flex: 1;
   min-height: 0;
-  max-height: calc(88dvh - 6rem);
+  max-height: calc(85dvh - 4rem);
 }
 
-.polaroid--large .polaroid__img {
-  max-height: calc(88dvh - 6rem);
+.expand-fly .polaroid__img {
   object-fit: contain;
-  background: #0a1810;
-}
-
-.polaroid--large .polaroid__caption {
-  font-size: 1.15rem;
-  flex-shrink: 0;
+  max-height: calc(85dvh - 4rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .creature-drift {
+  :root {
+    --print-duration: 0.05s;
+  }
+
+  .creature-bg__drift {
     animation: none !important;
   }
 
-  .polaroid--print {
-    transition-duration: 0.01ms;
+  .donut-svg__progress {
+    transition: none;
   }
 
-  .play-panel.has-load-error .viewfinder {
+  body.phase-camera.has-load-error .creature-bg {
     animation: none;
   }
 }

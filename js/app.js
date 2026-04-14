@@ -7,6 +7,8 @@ import {
   addPhoto,
   clearCooldown,
   clearPhotos,
+  setLastBackgroundUrl,
+  getLastBackgroundUrl,
 } from './storage.js';
 import {
   unlockAudio,
@@ -16,28 +18,32 @@ import {
   playPrintSound,
 } from './sounds.js';
 
-const PRINT_FALLBACK_MS = 1300;
+const PRINT_DURATION_MS = 7000;
+const PRINT_FALLBACK_MS = 7200;
 const PRINT_FALLBACK_REDUCED_MS = 80;
+const DONUT_R = 40;
+const DONUT_C = 2 * Math.PI * DONUT_R;
 
-/** Dev: Ctrl+Shift+Alt+R — clears cooldown & album, returns to camera (testing only). */
+/** Dev: Ctrl+Shift+Alt+R */
 
 const els = {
-  countdownBar: document.getElementById('countdown-bar'),
-  countdownClock: document.getElementById('countdown-clock'),
-  playPanel: document.getElementById('play-panel'),
-  viewfinder: document.getElementById('viewfinder'),
+  creatureBg: document.getElementById('creature-bg'),
+  creatureDrift: document.getElementById('creature-drift'),
   creatureImg: document.getElementById('creature-img'),
-  newCreatureBtn: document.getElementById('new-creature-btn'),
-  collectionGrid: document.getElementById('collection-grid'),
+  cameraHit: document.getElementById('camera-hit'),
+  swapBtn: document.getElementById('swap-btn'),
+  albumModal: document.getElementById('album-modal'),
+  albumScroll: document.getElementById('album-scroll'),
+  albumList: document.getElementById('album-list'),
+  modalCountdown: document.getElementById('modal-countdown'),
+  donutProgress: document.getElementById('donut-progress'),
   printStage: document.getElementById('print-stage'),
   emergingPolaroid: document.getElementById('emerging-polaroid'),
   printImg: document.getElementById('print-img'),
   printCaption: document.getElementById('print-caption'),
-  lightbox: document.getElementById('lightbox'),
-  lightboxBackdrop: document.getElementById('lightbox-backdrop'),
-  lightboxCard: document.getElementById('lightbox-card'),
-  lightboxImg: document.getElementById('lightbox-img'),
-  lightboxCaption: document.getElementById('lightbox-caption'),
+  expandLayer: document.getElementById('expand-layer'),
+  expandBackdrop: document.getElementById('expand-backdrop'),
+  expandFly: document.getElementById('expand-fly'),
 };
 
 /**
@@ -47,9 +53,9 @@ let gameState = 'camera_unfocused';
 let currentCreature = null;
 let cooldownTimer = null;
 let loadLock = false;
-let lightboxOpen = false;
-let lastScrollYForLightbox = 0;
-let lightboxTouchY = null;
+
+/** @type {{ btn: HTMLButtonElement; clone: HTMLElement; source: HTMLElement } | null} */
+let expandedState = null;
 
 function formatClock(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -64,53 +70,73 @@ function isCooldownActive() {
   return Date.now() < getCooldownUntil();
 }
 
-function setWaitingChrome(visible) {
-  els.countdownBar.classList.toggle('hidden', !visible);
-  document.body.classList.toggle('is-waiting', visible);
+function setPhaseCamera() {
+  document.body.classList.remove('phase-waiting');
+  document.body.classList.add('phase-camera');
+  els.albumModal.classList.add('hidden');
+  els.albumModal.setAttribute('aria-hidden', 'true');
 }
 
-function showWaitingUI() {
-  gameState = 'waiting';
-  els.playPanel.classList.add('hidden');
-  setWaitingChrome(true);
-  updateCooldownLabel();
+function setPhaseWaiting() {
+  document.body.classList.remove('phase-camera');
+  document.body.classList.add('phase-waiting');
+  els.albumModal.classList.remove('hidden');
+  els.albumModal.setAttribute('aria-hidden', 'false');
+}
+
+function setCameraLive(on) {
+  document.body.classList.toggle('is-camera-live', on);
+}
+
+function setCameraPrinting(on) {
+  document.body.classList.toggle('is-printing', on);
+}
+
+function setFocused(on) {
+  document.body.classList.toggle('is-focused', on);
+}
+
+function setLoadError(on) {
+  document.body.classList.toggle('has-load-error', !!on);
+}
+
+function updateAlbumCountdown() {
+  const until = getCooldownUntil();
+  const left = Math.max(0, until - Date.now());
+  els.modalCountdown.textContent = formatClock(left);
+  const ratio = COOLDOWN_MS > 0 ? left / COOLDOWN_MS : 0;
+  els.donutProgress.style.strokeDasharray = `${DONUT_C}`;
+  els.donutProgress.style.strokeDashoffset = `${DONUT_C * (1 - ratio)}`;
+}
+
+function startCooldownTimer() {
   if (cooldownTimer) clearInterval(cooldownTimer);
   cooldownTimer = setInterval(() => {
     if (!isCooldownActive()) {
       clearInterval(cooldownTimer);
       cooldownTimer = null;
-      setWaitingChrome(false);
+      setLastBackgroundUrl('');
+      setPhaseCamera();
       beginRound();
       return;
     }
-    updateCooldownLabel();
+    updateAlbumCountdown();
   }, 250);
 }
 
-function updateCooldownLabel() {
-  const until = getCooldownUntil();
-  const left = until - Date.now();
-  els.countdownClock.textContent = formatClock(left);
-}
-
-function setCameraLive(on) {
-  els.viewfinder.classList.toggle('is-camera-live', on);
-}
-
-function setCameraPrinting(on) {
-  els.viewfinder.classList.toggle('is-printing', on);
-}
-
-function setLoadError(on) {
-  els.playPanel.classList.toggle('has-load-error', !!on);
+function showWaitingUI() {
+  gameState = 'waiting';
+  setPhaseWaiting();
+  updateAlbumCountdown();
+  startCooldownTimer();
 }
 
 function resetCameraUnfocusedUI() {
   gameState = 'camera_unfocused';
-  els.viewfinder.classList.remove('is-focused');
+  setFocused(false);
   setCameraPrinting(false);
   setCameraLive(true);
-  els.newCreatureBtn.classList.remove('hidden');
+  els.swapBtn.classList.remove('hidden');
 }
 
 function pickAnimalPayload(excludeId) {
@@ -130,8 +156,8 @@ async function beginRound() {
   els.creatureImg.alt = '';
   currentCreature = null;
   resetCameraUnfocusedUI();
-  els.newCreatureBtn.disabled = true;
-  els.playPanel.classList.remove('hidden');
+  els.swapBtn.disabled = true;
+  setPhaseCamera();
   try {
     const data = pickAnimalPayload(null);
     currentCreature = data;
@@ -144,7 +170,7 @@ async function beginRound() {
     setCameraLive(false);
   } finally {
     loadLock = false;
-    els.newCreatureBtn.disabled = false;
+    els.swapBtn.disabled = false;
   }
 }
 
@@ -152,12 +178,11 @@ async function swapCreature() {
   if (gameState !== 'camera_unfocused' || !currentCreature || loadLock) return;
   loadLock = true;
   setLoadError(false);
-  els.newCreatureBtn.disabled = true;
+  els.swapBtn.disabled = true;
   const excludeId = currentCreature.creature.id;
   try {
     const data = pickAnimalPayload(excludeId);
     currentCreature = data;
-    els.creatureImg.alt = '';
     els.creatureImg.src = data.fullUrl;
     await els.creatureImg.decode().catch(() => {});
     await unlockAudio();
@@ -167,7 +192,7 @@ async function swapCreature() {
     setLoadError(true);
   } finally {
     loadLock = false;
-    els.newCreatureBtn.disabled = false;
+    els.swapBtn.disabled = false;
   }
 }
 
@@ -210,106 +235,128 @@ function hidePrintStage() {
   els.emergingPolaroid.classList.remove('is-emerged');
 }
 
-function renderCollection() {
+function buildPolaroidEl(photo, fullRes = false, layout = 'thumb') {
+  const wrap = document.createElement('div');
+  wrap.className = layout === 'expand' ? 'polaroid polaroid--expand' : 'polaroid polaroid--thumb';
+  const photoWrap = document.createElement('div');
+  photoWrap.className = 'polaroid__photo';
+  const img = document.createElement('img');
+  img.className = 'polaroid__img';
+  img.src = fullRes ? photo.imageUrl : photo.thumbUrl || photo.imageUrl;
+  img.alt = '';
+  photoWrap.appendChild(img);
+  const cap = document.createElement('p');
+  cap.className = 'polaroid__caption';
+  cap.textContent = photo.animalName;
+  wrap.appendChild(photoWrap);
+  wrap.appendChild(cap);
+  return wrap;
+}
+
+function renderAlbumList() {
   const photos = getPhotos();
-  els.collectionGrid.replaceChildren();
+  els.albumList.replaceChildren();
   for (const p of photos) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'collection-item';
-
-    const polaroid = document.createElement('div');
-    polaroid.className = 'polaroid polaroid--thumb';
-
-    const photoWrap = document.createElement('div');
-    photoWrap.className = 'polaroid__photo';
-    const img = document.createElement('img');
-    img.className = 'polaroid__img';
-    img.src = p.thumbUrl || p.imageUrl;
-    img.alt = '';
-    img.loading = 'lazy';
-    photoWrap.appendChild(img);
-
-    const cap = document.createElement('p');
-    cap.className = 'polaroid__caption';
-    cap.textContent = p.animalName;
-
-    polaroid.appendChild(photoWrap);
-    polaroid.appendChild(cap);
-    btn.appendChild(polaroid);
-
-    btn.addEventListener('click', () => openLightbox(p));
-    els.collectionGrid.appendChild(btn);
+    btn.className = 'album-item';
+    btn.appendChild(buildPolaroidEl(p, false));
+    btn.addEventListener('click', () => expandPhoto(btn, p));
+    els.albumList.appendChild(btn);
   }
 }
 
-function openLightbox(photo) {
-  lightboxOpen = true;
-  lastScrollYForLightbox = window.scrollY;
-  lightboxTouchY = null;
-  els.lightboxImg.src = photo.imageUrl;
-  els.lightboxImg.alt = '';
-  els.lightboxCaption.textContent = photo.animalName;
-  els.lightbox.classList.remove('hidden');
-  els.lightbox.setAttribute('aria-hidden', 'false');
+function expandPhoto(btn, photo) {
+  if (expandedState || loadLock) return;
+  const source = btn.querySelector('.polaroid');
+  if (!source) return;
+
+  const first = source.getBoundingClientRect();
+  source.classList.add('is-source-hidden');
+
+  const clone = buildPolaroidEl(photo, true, 'expand');
+  const lastW = Math.min(window.innerWidth * 0.9, 340);
+  const lastH = Math.min(window.innerHeight * 0.82, lastW * 1.28);
+  const lastLeft = (window.innerWidth - lastW) / 2;
+  const lastTop = (window.innerHeight - lastH) / 2;
+
+  clone.style.position = 'fixed';
+  clone.style.left = `${lastLeft}px`;
+  clone.style.top = `${lastTop}px`;
+  clone.style.width = `${lastW}px`;
+  clone.style.height = `${lastH}px`;
+  clone.style.margin = '0';
+  clone.style.zIndex = '3';
+  clone.style.transformOrigin = 'top left';
+  clone.style.boxSizing = 'border-box';
+
+  const dx = first.left - lastLeft;
+  const dy = first.top - lastTop;
+  const sx = first.width / lastW;
+  const sy = first.height / lastH;
+  clone.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+
+  els.expandFly.replaceChildren(clone);
+  els.expandLayer.classList.remove('hidden');
+  els.expandLayer.setAttribute('aria-hidden', 'false');
+  expandedState = { btn, clone, source };
+
+  clone.addEventListener('click', (e) => {
+    e.stopPropagation();
+    collapsePhoto();
+  });
+
+  requestAnimationFrame(() => {
+    clone.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+    clone.style.transform = 'none';
+  });
 }
 
-function closeLightbox() {
-  if (!lightboxOpen) return;
-  lightboxOpen = false;
-  lightboxTouchY = null;
-  els.lightbox.classList.add('hidden');
-  els.lightbox.setAttribute('aria-hidden', 'true');
-  els.lightboxImg.removeAttribute('src');
+function collapsePhoto() {
+  if (!expandedState) return;
+  const { clone, source } = expandedState;
+  const firstRect = clone.getBoundingClientRect();
+  const lastRect = source.getBoundingClientRect();
+  const dx = lastRect.left - firstRect.left;
+  const dy = lastRect.top - firstRect.top;
+  const sx = lastRect.width / firstRect.width;
+  const sy = lastRect.height / firstRect.height;
+
+  clone.style.transition = 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)';
+  clone.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+
+  let cleaned = false;
+  const done = () => {
+    if (cleaned) return;
+    cleaned = true;
+    clone.removeEventListener('transitionend', onEnd);
+    source.classList.remove('is-source-hidden');
+    els.expandFly.replaceChildren();
+    els.expandLayer.classList.add('hidden');
+    els.expandLayer.setAttribute('aria-hidden', 'true');
+    expandedState = null;
+  };
+
+  const onEnd = (e) => {
+    if (e.propertyName === 'transform') done();
+  };
+  clone.addEventListener('transitionend', onEnd);
+  setTimeout(done, 520);
 }
 
-function onWindowScroll() {
-  if (!lightboxOpen) return;
-  if (Math.abs(window.scrollY - lastScrollYForLightbox) > 12) {
-    closeLightbox();
-  }
+function onAlbumScroll() {
+  if (expandedState) collapsePhoto();
 }
 
-async function devResetGame() {
-  if (cooldownTimer) {
-    clearInterval(cooldownTimer);
-    cooldownTimer = null;
-  }
-  closeLightbox();
-  hidePrintStage();
-  setLoadError(false);
-  clearCooldown();
-  clearPhotos();
-  renderCollection();
-  setWaitingChrome(false);
-  els.playPanel.classList.remove('hidden');
-  gameState = 'camera_unfocused';
-  loadLock = false;
-  setCameraPrinting(false);
-
-  try {
-    await loadCatalog();
-    document.body.classList.remove('no-catalog');
-  } catch {
-    document.body.classList.add('no-catalog');
-    els.playPanel.classList.add('hidden');
-    return;
-  }
-
-  renderCollection();
-  await beginRound();
-}
-
-async function onViewfinderActivate() {
+async function onCameraActivate() {
   if (loadLock || isCooldownActive() || !currentCreature || gameState === 'taking_picture') return;
   await unlockAudio();
 
   if (gameState === 'camera_unfocused') {
     await playFocusSound();
     gameState = 'camera_focused';
-    els.viewfinder.classList.add('is-focused');
-    els.creatureImg.alt = '';
-    els.newCreatureBtn.classList.add('hidden');
+    setFocused(true);
+    els.swapBtn.classList.add('hidden');
     return;
   }
 
@@ -332,7 +379,8 @@ async function onViewfinderActivate() {
         takenAt: new Date().toISOString(),
       };
       addPhoto(photo);
-      renderCollection();
+      setLastBackgroundUrl(currentCreature.fullUrl);
+      renderAlbumList();
       setCooldownUntil(Date.now() + COOLDOWN_MS);
       hidePrintStage();
       setCameraLive(false);
@@ -344,62 +392,93 @@ async function onViewfinderActivate() {
   }
 }
 
-async function bootstrap() {
+async function devResetGame() {
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer);
+    cooldownTimer = null;
+  }
+  collapsePhoto();
+  hidePrintStage();
+  setLoadError(false);
+  clearCooldown();
+  clearPhotos();
+  setLastBackgroundUrl('');
+  renderAlbumList();
+  updateAlbumCountdown();
+  expandedState = null;
+  loadLock = false;
+  setCameraPrinting(false);
+
   try {
     await loadCatalog();
-    renderCollection();
+    document.body.classList.remove('no-catalog');
+  } catch {
+    document.body.classList.add('no-catalog');
+    return;
+  }
+
+  renderAlbumList();
+  await beginRound();
+}
+
+function applyCooldownBootBackground() {
+  const url = getLastBackgroundUrl() || getPhotos()[0]?.imageUrl;
+  if (url) els.creatureImg.src = url;
+}
+
+async function bootstrap() {
+  els.donutProgress.style.strokeDasharray = `${DONUT_C}`;
+
+  try {
+    await loadCatalog();
+    renderAlbumList();
     if (isCooldownActive()) {
-      showWaitingUI();
+      applyCooldownBootBackground();
+      setPhaseWaiting();
+      gameState = 'waiting';
+      updateAlbumCountdown();
+      startCooldownTimer();
     } else {
-      setWaitingChrome(false);
+      setPhaseCamera();
       beginRound();
     }
   } catch {
     document.body.classList.add('no-catalog');
-    els.playPanel.classList.add('hidden');
   }
 
-  els.viewfinder.addEventListener('click', () => {
-    onViewfinderActivate();
+  els.cameraHit.addEventListener('click', () => {
+    onCameraActivate();
   });
 
-  els.viewfinder.addEventListener('keydown', (e) => {
+  els.cameraHit.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onViewfinderActivate();
+      onCameraActivate();
     }
   });
 
-  els.newCreatureBtn.addEventListener('click', () => {
+  els.swapBtn.addEventListener('click', () => {
     swapCreature();
   });
 
-  els.lightboxBackdrop.addEventListener('click', () => closeLightbox());
-  els.lightboxCard.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closeLightbox();
+  els.expandBackdrop.addEventListener('click', () => {
+    collapsePhoto();
   });
 
-  window.addEventListener(
-    'scroll',
-    () => {
-      onWindowScroll();
-    },
-    { passive: true }
-  );
+  els.albumScroll.addEventListener('scroll', onAlbumScroll, { passive: true });
 
   window.addEventListener(
     'wheel',
     () => {
-      if (lightboxOpen) closeLightbox();
+      if (expandedState) collapsePhoto();
     },
     { passive: true }
   );
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && lightboxOpen) {
+    if (e.key === 'Escape' && expandedState) {
       e.preventDefault();
-      closeLightbox();
+      collapsePhoto();
       return;
     }
     if (e.ctrlKey && e.shiftKey && e.altKey && e.code === 'KeyR') {
@@ -407,25 +486,6 @@ async function bootstrap() {
       void devResetGame();
     }
   });
-
-  document.addEventListener(
-    'touchstart',
-    (e) => {
-      if (!lightboxOpen) return;
-      lightboxTouchY = e.touches[0]?.clientY ?? null;
-    },
-    { passive: true }
-  );
-
-  document.addEventListener(
-    'touchmove',
-    (e) => {
-      if (!lightboxOpen || lightboxTouchY == null) return;
-      const y = e.touches[0]?.clientY;
-      if (y != null && Math.abs(y - lightboxTouchY) > 28) closeLightbox();
-    },
-    { passive: true }
-  );
 }
 
 bootstrap();

@@ -21,6 +21,15 @@ export function clearPhotos() {
   localStorage.removeItem(`${PREFIX}.photos`);
 }
 
+export function setLastBackgroundUrl(url) {
+  if (url) localStorage.setItem(`${PREFIX}.lastBgUrl`, url);
+  else localStorage.removeItem(`${PREFIX}.lastBgUrl`);
+}
+
+export function getLastBackgroundUrl() {
+  return localStorage.getItem(`${PREFIX}.lastBgUrl`) || '';
+}
+
 export function getPhotos() {
   try {
     const raw = localStorage.getItem(`${PREFIX}.photos`);
