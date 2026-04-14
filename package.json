@@ -4,6 +4,7 @@
   "scripts": {
     "build": "node scripts/generate-og-image.mjs && node scripts/build-public.mjs",
     "build:public": "node scripts/build-public.mjs",
+    "deploy": "npm run build && wrangler versions upload",
     "generate:og": "node scripts/generate-og-image.mjs",
     "build:animals": "node scripts/build-animals-json.mjs",
     "verify:animals": "node scripts/verify-animal-sources.mjs",

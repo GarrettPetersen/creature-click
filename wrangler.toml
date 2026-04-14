@@ -1,5 +1,8 @@
 # Static site on Workers (assets-only; no main script).
 # https://developers.cloudflare.com/workers/static-assets/
+#
+# ./public is generated and gitignored. Run `npm run build` before upload, or use:
+#   npm run deploy
 name = "creature-click"
 compatibility_date = "2026-04-13"
 
