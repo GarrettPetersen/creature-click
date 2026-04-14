@@ -214,11 +214,21 @@ function invalidatePreloads() {
   preloadedNextCreature = null;
 }
 
+/** Cross-origin Commons URLs can make `decode()` never settle in some browsers; never block the UI on it. */
+function withDecodeTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    }),
+  ]);
+}
+
 async function decodeImageUrl(url) {
   const img = new Image();
   img.src = url;
   if (img.decode) {
-    await img.decode();
+    await withDecodeTimeout(img.decode().catch(() => {}), 5000);
   } else {
     await new Promise((resolve, reject) => {
       img.onload = () => resolve();
@@ -277,7 +287,7 @@ async function beginRound() {
     currentCreature = data;
     els.creatureImg.src = data.fullUrl;
     applyImageFocus(els.creatureImg, data.creature.direction);
-    await els.creatureImg.decode().catch(() => {});
+    await withDecodeTimeout(els.creatureImg.decode().catch(() => {}), 2500);
     await unlockAudio();
     await playBeepUnfocused();
     void preloadNextRound();
