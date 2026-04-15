@@ -2,6 +2,7 @@
   "name": "creature-click",
   "private": true,
   "scripts": {
+    "dev": "npm run build:public && npx --yes serve public -l 3333",
     "build": "node scripts/generate-og-image.mjs && node scripts/build-public.mjs",
     "build:public": "node scripts/build-public.mjs",
     "deploy": "npm run build && wrangler versions upload",
