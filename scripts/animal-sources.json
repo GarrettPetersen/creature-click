@@ -190,6 +190,83 @@
     "file": "Felis catus-cat on snow.jpg"
   },
   {
+    "name": "Platypus",
+    "file": "Platypus.jpg"
+  },
+  {
+    "name": "Chameleon",
+    "file": "Chamaeleo calyptratus.jpg",
+    "direction": "up"
+  },
+  {
+    "name": "Orangutan",
+    "file": "Orangutan.jpg"
+  },
+  {
+    "name": "Capybara",
+    "file": "Capybara (Hydrochoerus hydrochaeris).jpg"
+  },
+  {
+    "name": "Gorilla",
+    "file": "Gorilla.jpg"
+  },
+  {
+    "name": "Alpaca",
+    "file": "Alpaca.jpg"
+  },
+  {
+    "name": "Narwhal",
+    "file": "Monodon monoceros pod.jpg"
+  },
+  {
+    "name": "Raccoon",
+    "file": "Raccoon (Procyon lotor) 2.jpg"
+  },
+  {
+    "name": "Llama",
+    "file": "Llama lying down.jpg"
+  },
+  {
+    "name": "Humpback whale",
+    "file": "Humpback whale.jpg"
+  },
+  {
+    "name": "Ladybug",
+    "file": "Coccinella septempunctata.jpg"
+  },
+  {
+    "name": "Seahorse",
+    "file": "Hippocampus whitei.jpg"
+  },
+  {
+    "name": "Starfish",
+    "file": "Fromia monilis (Seastar).jpg"
+  },
+  {
+    "name": "Tapir",
+    "file": "Tapirus terrestris.jpg"
+  },
+  {
+    "name": "Moose",
+    "file": "Moose.jpg"
+  },
+  {
+    "name": "Walrus",
+    "file": "Odobenus rosmarus.jpg"
+  },
+  {
+    "name": "Sea lion",
+    "file": "California sea lion in La Jolla (70568).jpg"
+  },
+  {
+    "name": "Pig",
+    "file": "Schwein.jpg"
+  },
+  {
+    "name": "Red fox",
+    "file": "Red fox.jpg"
+  },
+  {
     "name": "Cottontail rabbit",
     "file": "Eastern cottontail headshot (30826).jpg"
   },
