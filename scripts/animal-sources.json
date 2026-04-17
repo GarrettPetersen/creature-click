@@ -191,12 +191,12 @@
   },
   {
     "name": "Platypus",
-    "file": "Platypus.jpg"
+    "file": "Platypus.jpg",
+    "direction": "right"
   },
   {
     "name": "Chameleon",
-    "file": "Chamaeleo calyptratus.jpg",
-    "direction": "up"
+    "file": "Chamaeleo calyptratus.jpg"
   },
   {
     "name": "Orangutan",
@@ -248,7 +248,8 @@
   },
   {
     "name": "Moose",
-    "file": "Moose.jpg"
+    "file": "Moose.jpg",
+    "direction": "up"
   },
   {
     "name": "Walrus",
@@ -264,7 +265,8 @@
   },
   {
     "name": "Red fox",
-    "file": "Red fox.jpg"
+    "file": "Red fox.jpg",
+    "direction": "up"
   },
   {
     "name": "Cottontail rabbit",

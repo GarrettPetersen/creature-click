@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-04-17T05:47:41.219Z",
+  "generatedAt": "2026-04-17T05:59:20.182Z",
   "note": "Curated Commons files + resolved URLs. Regenerate with: node scripts/build-animals-json.mjs",
   "displayMaxWidth": 1920,
   "thumbMaxWidth": 640,
@@ -565,7 +565,8 @@
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Platypus.jpg",
       "width": 680,
       "height": 453,
-      "mime": "image/jpeg"
+      "mime": "image/jpeg",
+      "direction": "right"
     },
     {
       "id": "3822279",
@@ -577,8 +578,7 @@
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/Chamaeleo_calyptratus.jpg",
       "width": 800,
       "height": 600,
-      "mime": "image/jpeg",
-      "direction": "up"
+      "mime": "image/jpeg"
     },
     {
       "id": "666196",
@@ -734,7 +734,8 @@
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Moose.jpg",
       "width": 1862,
       "height": 2811,
-      "mime": "image/jpeg"
+      "mime": "image/jpeg",
+      "direction": "up"
     },
     {
       "id": "9657191",
@@ -782,7 +783,8 @@
       "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Red_fox.jpg",
       "width": 517,
       "height": 775,
-      "mime": "image/jpeg"
+      "mime": "image/jpeg",
+      "direction": "up"
     },
     {
       "id": "169304258",
